@@ -1,7 +1,7 @@
 // Package config contains parser to parse configuration rules according to following formal grammar
 //
 // RULE -> BROWSER_DEF COLON MATCHER_DEF [SEMICOLON RULE_DEF]*
-// BROWSER_DEF -> VALUE
+// BROWSER_DEF -> VALUE [SPACE VALUE]*
 // MATCHER_DEF -> MATCHER_PROPERTY EQ VALUE
 // MATCHER_PROPERTY -> VALUE DOT VALUE
 //
@@ -42,21 +42,14 @@ func (p *Parser) ParseRule() (Rule, bool, error) {
 	if err != nil {
 		return Rule{}, false, err
 	}
-
 	if tok.Type == EOF {
 		return Rule{}, true, nil
 	}
 
-	if tok.Type != VALUE {
-		return Rule{}, false, fmt.Errorf("unexpected token, expected VALUE, but got: %v", tok)
-	}
-	browserDef := tok.Value
-
-	if tok, err = p.scan(); err != nil {
+	p.unscan()
+	browserDef, err := p.parseBrowserCommand()
+	if err != nil {
 		return Rule{}, false, err
-	}
-	if tok.Type != COLON {
-		return Rule{}, false, fmt.Errorf("unexpected token, expected COLON, but got: %v", tok)
 	}
 
 	matchers := make(map[string]MatcherProps)
@@ -86,9 +79,27 @@ func (p *Parser) ParseRule() (Rule, bool, error) {
 	}
 
 	return Rule{
-		Target:   browserDef,
+		Command:  browserDef,
 		Matchers: matchers,
 	}, false, nil
+}
+
+func (p *Parser) parseBrowserCommand() ([]string, error) {
+	result := []string{}
+
+	for tok, err := p.scanSkipSpace(); tok.Type != COLON; tok, err = p.scanSkipSpace() {
+		if err != nil {
+			return nil, err
+		}
+
+		if tok.Type != VALUE {
+			return nil, fmt.Errorf("expected VALUE or COLON, but got %v", tok)
+		}
+
+		result = append(result, tok.Value)
+	}
+
+	return result, nil
 }
 
 // parseMatcherDef parse matcher
@@ -110,7 +121,14 @@ func (p *Parser) parseMatcherDef() (string, string, string, error) {
 		return "", "", "", err
 	}
 	if tok.Type != DOT {
-		return "", "", "", fmt.Errorf("unexpected token, expected DOT, but got: %v", tok)
+		if tok, err = p.scanSkipSpace(); err != nil {
+			return "", "", "", err
+		}
+		if tok.Type == ENDL || tok.Type == EOF {
+			return matcherType, "", "", nil
+		}
+
+		return "", "", "", fmt.Errorf("unexpected token, expected DOT, ENDL or EOF, but got: %v", tok)
 	}
 
 	if tok, err = p.scan(); err != nil {

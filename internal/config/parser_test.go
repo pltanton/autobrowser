@@ -16,9 +16,9 @@ func TestParser_ParseRule(t *testing.T) {
 	}{
 		{
 			name:  "Successfully parse",
-			inStr: "firefox:url.regex='.*example.*';app.name=slack;app.foo=bar",
+			inStr: "firefox -command {}:url.regex='.*example.*';app.name=slack;app.foo=bar",
 			want: Rule{
-				Target: "firefox",
+				Command: []string{"firefox", "-command", "{}"},
 				Matchers: map[string]MatcherProps{
 					"url": {"regex": ".*example.*"},
 					"app": {"name": "slack", "foo": "bar"},

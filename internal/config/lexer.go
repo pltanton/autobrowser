@@ -192,7 +192,7 @@ var WhitespaceClass CharacterClass = func(r rune) bool {
 }
 
 var ValueClass CharacterClass = func(r rune) bool {
-	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_'
+	return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_' || r == '{' || r == '}'
 }
 
 func isEof(r rune) bool {

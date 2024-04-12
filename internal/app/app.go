@@ -1,9 +1,10 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/pltanton/autobrowser/internal/args"
 	"github.com/pltanton/autobrowser/internal/config"
@@ -29,11 +30,19 @@ func SetupAndRun(cfg args.Args, registry *matchers.MatchersRegistry) {
 		}
 
 		if matches {
-			// TODO: do actual execution here
-			fmt.Printf("Great success rule matched! Target: %s\n", rule.Target)
+			// Replace all placeholders in command to url
+			command := rule.Command
+			for i := range command {
+				command[i] = strings.Replace(command[i], "{}", cfg.Url, 1)
+			}
+
+			cmd := exec.Command(command[0], command[1:]...)
+			if err := cmd.Run(); err != nil {
+				log.Fatalln("Failed to run command: ", err)
+			}
 			return
 		}
 	}
 
-	fmt.Println("No rules matches")
+	log.Println("Nothing matched, please specify 'fallback' rule to setup default browser!")
 }

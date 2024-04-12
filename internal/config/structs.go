@@ -12,6 +12,6 @@ type Rule struct {
 	// Prepeared rule matcher with parsed argument
 	Matchers map[string]MatcherProps
 
-	// Target browser command
-	Target string
+	// Command browser command
+	Command []string
 }
