@@ -1,6 +1,8 @@
 package config
 
 import (
+	"errors"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -8,11 +10,11 @@ import (
 
 func TestParser_ParseRule(t *testing.T) {
 	tests := []struct {
-		name     string
-		inStr    string
-		want     Rule
-		wantOver bool
-		wantErr  bool
+		name    string
+		inStr   string
+		want    Rule
+		wantErr bool
+		err     error
 	}{
 		{
 			name:  "Successfully parse",
@@ -36,21 +38,22 @@ func TestParser_ParseRule(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:     "Should be over",
-			inStr:    "   \n\n\n   \n",
-			wantOver: true,
+			name:    "Should be over",
+			inStr:   "   \n\n\n   \n",
+			wantErr: true,
+			err:     io.EOF,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := NewParser(strings.NewReader(tt.inStr))
-			got, over, err := p.ParseRule()
+			got, err := p.ParseRule()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parser.ParseRule() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if (over != true) == tt.wantOver {
-				t.Errorf("Parser.ParseRule() over = %v, wantOver %v", over, tt.wantOver)
+			if (tt.err != nil) && errors.Is(tt.err, err) {
+				t.Errorf("Parser.ParseRule() error = %v, should be err %v", err, tt.err)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

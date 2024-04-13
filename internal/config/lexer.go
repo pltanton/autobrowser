@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"unicode"
 )
 
@@ -72,11 +73,8 @@ func NewLexer(in io.Reader) *Lexer {
 	}
 }
 
-func (l *Lexer) Next() (Token, error) {
-	r, err := l.readRune()
-	if err != nil {
-		return Token{}, err
-	}
+func (l *Lexer) Next() Token {
+	r := l.readRune()
 
 	if WhitespaceClass(r) {
 		l.unreadRune()
@@ -88,48 +86,47 @@ func (l *Lexer) Next() (Token, error) {
 
 	switch r {
 	case rune(0):
-		return Token{EOF, ""}, nil
+		return Token{EOF, ""}
 	case '\'':
 		l.unreadRune()
 		return l.scanEscapedValue()
 	case '=':
-		return Token{EQ, string(r)}, nil
+		return Token{EQ, string(r)}
 	case '.':
-		return Token{DOT, string(r)}, nil
+		return Token{DOT, string(r)}
 	case ':':
-		return Token{COLON, string(r)}, nil
+		return Token{COLON, string(r)}
 	case ';':
-		return Token{SEMICOLON, string(r)}, nil
+		return Token{SEMICOLON, string(r)}
 	case ',':
-		return Token{COMMA, string(r)}, nil
+		return Token{COMMA, string(r)}
 	case '\n':
-		return Token{ENDL, string(r)}, nil
+		return Token{ENDL, string(r)}
 	}
 
-	return Token{}, fmt.Errorf("unexpected token %d", r)
+	return Token{ILLEGAL, string(r)}
 }
 
-func (l *Lexer) readRune() (rune, error) {
+func (l *Lexer) readRune() rune {
 	r, _, err := l.input.ReadRune()
-	if errors.Is(err, io.EOF) {
-		return rune(0), nil
+	if errors.Is(io.EOF, err) {
+		return rune(0)
+	} else if err != nil {
+		log.Println("Unexpected error occured while reading configuration: ", err)
+		return rune(0)
 	}
-	return r, err
+	return r
 }
 
 func (l *Lexer) unreadRune() {
 	l.input.UnreadRune()
 }
 
-func (l *Lexer) scanCharclassSequence(tokenType TokenType, class CharacterClass) (Token, error) {
+func (l *Lexer) scanCharclassSequence(tokenType TokenType, class CharacterClass) Token {
 	var buf bytes.Buffer
 
 	for {
-		r, err := l.readRune()
-		if err != nil {
-			return Token{}, err
-		}
-
+		r := l.readRune()
 		if isEof(r) {
 			break
 		} else if !class(r) {
@@ -144,32 +141,26 @@ func (l *Lexer) scanCharclassSequence(tokenType TokenType, class CharacterClass)
 	return Token{
 		Type:  tokenType,
 		Value: buf.String(),
-	}, nil
+	}
 }
 
-func (l *Lexer) scanWhitespaces() (Token, error) {
+func (l *Lexer) scanWhitespaces() Token {
 	return l.scanCharclassSequence(SPACE, WhitespaceClass)
 }
 
-func (l *Lexer) scanValue() (Token, error) {
+func (l *Lexer) scanValue() Token {
 	return l.scanCharclassSequence(VALUE, ValueClass)
 }
 
-func (l *Lexer) scanEscapedValue() (Token, error) {
-	r, err := l.readRune()
-	if err != nil {
-		return Token{}, err
-	}
+func (l *Lexer) scanEscapedValue() Token {
+	r := l.readRune()
 	if r != '\'' {
-		return Token{}, fmt.Errorf("expected escapesequence started from ' but got %c", r)
+		return Token{ILLEGAL, string(r)}
 	}
 
 	var buf bytes.Buffer
 	for {
-		r, err := l.readRune()
-		if err != nil {
-			return Token{}, err
-		}
+		r := l.readRune()
 
 		if isEof(r) {
 			break
@@ -184,7 +175,7 @@ func (l *Lexer) scanEscapedValue() (Token, error) {
 	return Token{
 		Type:  VALUE,
 		Value: buf.String(),
-	}, nil
+	}
 }
 
 var WhitespaceClass CharacterClass = func(r rune) bool {

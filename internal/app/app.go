@@ -1,6 +1,8 @@
 package app
 
 import (
+	"errors"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -19,7 +21,7 @@ func SetupAndRun(cfg args.Args, registry *matchers.MatchersRegistry) {
 
 	parser := config.NewParser(configFile)
 
-	for rule, over, err := parser.ParseRule(); !over; rule, over, err = parser.ParseRule() {
+	for rule, err := parser.ParseRule(); !errors.Is(err, io.EOF); rule, err = parser.ParseRule() {
 		if err != nil {
 			log.Fatalf("Failed to parse rule: %s", err)
 		}

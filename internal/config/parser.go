@@ -35,21 +35,20 @@ func NewParser(in io.Reader) *Parser {
 // Parse rule parses single rule
 //
 // RULE -> RULE_NAME COLON MATCHER_PROPERTY EQ
-func (p *Parser) ParseRule() (Rule, bool, error) {
+//
+// Returns EOF error if sequence is over
+func (p *Parser) ParseRule() (Rule, error) {
 	p.skipEndls()
 
-	tok, err := p.scanSkipSpace()
-	if err != nil {
-		return Rule{}, false, err
-	}
+	tok := p.scanSkipSpace()
 	if tok.Type == EOF {
-		return Rule{}, true, nil
+		return Rule{}, fmt.Errorf("EOF token reached: %w", io.EOF)
 	}
 
 	p.unscan()
 	browserDef, err := p.parseBrowserCommand()
 	if err != nil {
-		return Rule{}, false, err
+		return Rule{}, err
 	}
 
 	matchers := make(map[string]MatcherProps)
@@ -57,7 +56,7 @@ func (p *Parser) ParseRule() (Rule, bool, error) {
 	for {
 		matcherName, propName, propValue, err := p.parseMatcherDef()
 		if err != nil {
-			return Rule{}, false, fmt.Errorf("failed to parse matcher definition: %w", err)
+			return Rule{}, fmt.Errorf("failed to parse matcher definition: %w", err)
 		}
 
 		matcher, ok := matchers[matcherName]
@@ -68,30 +67,24 @@ func (p *Parser) ParseRule() (Rule, bool, error) {
 
 		matcher[propName] = propValue
 
-		if tok, err = p.scanSkipSpace(); err != nil {
-			return Rule{}, false, err
-		}
+		tok = p.scanSkipSpace()
 		if tok.Type == ENDL || tok.Type == EOF {
 			break
 		} else if tok.Type != SEMICOLON {
-			return Rule{}, false, fmt.Errorf("failed to parse patchers definitions, expected SEMICOLON or end of rule, but got %v", tok)
+			return Rule{}, fmt.Errorf("failed to parse patchers definitions, expected SEMICOLON or end of rule, but got %v", tok)
 		}
 	}
 
 	return Rule{
 		Command:  browserDef,
 		Matchers: matchers,
-	}, false, nil
+	}, nil
 }
 
 func (p *Parser) parseBrowserCommand() ([]string, error) {
 	result := []string{}
 
-	for tok, err := p.scanSkipSpace(); tok.Type != COLON; tok, err = p.scanSkipSpace() {
-		if err != nil {
-			return nil, err
-		}
-
+	for tok := p.scanSkipSpace(); tok.Type != COLON; tok = p.scanSkipSpace() {
 		if tok.Type != VALUE {
 			return nil, fmt.Errorf("expected VALUE or COLON, but got %v", tok)
 		}
@@ -106,70 +99,58 @@ func (p *Parser) parseBrowserCommand() ([]string, error) {
 //
 // MATCHER_DEF -> MATCHER_PROPERTY EQ VALUE
 // MATCHER_PROPERTY -> VALUE DOT VALUE
+//
+// Returns matcher type, property name, property value
 func (p *Parser) parseMatcherDef() (string, string, string, error) {
-	tok, err := p.scan()
-	if err != nil {
-		return "", "", "", err
-	}
+	tok := p.scan()
 
 	if tok.Type != VALUE {
 		return "", "", "", fmt.Errorf("unexpected token for matcher type, expected VALUE, but got: %v", tok)
 	}
 	matcherType := tok.Value
 
-	if tok, err = p.scan(); err != nil {
-		return "", "", "", err
-	}
+	tok = p.scan()
 	if tok.Type != DOT {
-		if tok, err = p.scanSkipSpace(); err != nil {
-			return "", "", "", err
-		}
-		if tok.Type == ENDL || tok.Type == EOF {
+		tok = p.scanSkipSpace()
+
+		// If after dot there is end of rule, just return it as is
+		if tok.Type == ENDL || tok.Type == EOF || tok.Type == SEMICOLON {
 			return matcherType, "", "", nil
 		}
 
-		return "", "", "", fmt.Errorf("unexpected token, expected DOT, ENDL or EOF, but got: %v", tok)
+		return "", "", "", fmt.Errorf("unexpected token, expected DOT, ENDL, SEMICOLON or EOF, but got: %v", tok)
 	}
 
-	if tok, err = p.scan(); err != nil {
-		return "", "", "", err
-	}
+	tok = p.scan()
 	if tok.Type != VALUE {
 		return "", "", "", fmt.Errorf("unexpected token for matcher property name, expected VALUE, but got: %v", tok)
 	}
 	matcherProp := tok.Value
 
-	if tok, err = p.scan(); err != nil {
-		return "", "", "", err
-	}
+	tok = p.scan()
 	if tok.Type != EQ {
 		return "", "", "", fmt.Errorf("unexpected token, expected EQ, but got: %v", tok)
 	}
 
-	if tok, err = p.scan(); err != nil {
-		return "", "", "", err
-	}
+	tok = p.scan()
 	if tok.Type != VALUE {
 		return "", "", "", fmt.Errorf("unexpected token for matcher property value, expected VALUE, but got: %v", tok)
 	}
 	matcherPropValue := tok.Value
 
-	return matcherType, matcherProp, matcherPropValue, err
+	return matcherType, matcherProp, matcherPropValue, nil
 }
 
-func (p *Parser) scan() (Token, error) {
+// scan scan next token by lexer, using 1 wide window buffer
+func (p *Parser) scan() Token {
 	if p.buf.n != 0 {
 		p.buf.n--
-		return p.buf.token, nil
+		return p.buf.token
 	}
 
-	var err error
-	p.buf.token, err = p.l.Next()
-	if err != nil {
-		return p.buf.token, err
-	}
+	p.buf.token = p.l.Next()
 
-	return p.buf.token, nil
+	return p.buf.token
 }
 
 func (p *Parser) unscan() {
@@ -178,23 +159,21 @@ func (p *Parser) unscan() {
 
 func (p *Parser) skipEndls() error {
 	var tok Token
-	var err error
-	for tok, err = p.scan(); (tok.Type == SPACE || tok.Type == ENDL) && err == nil; tok, err = p.scan() {
+	for tok = p.scan(); tok.Type == SPACE || tok.Type == ENDL; tok = p.scan() {
+		// Just skip it
 	}
 
-	if err != nil {
-		return err
-	}
-
+	// We did at least one scan, so unscan is necessary
 	p.unscan()
 	return nil
 }
 
-func (p *Parser) scanSkipSpace() (Token, error) {
-	t, err := p.scan()
+// scanSkipSpace scans skipping spaces
+func (p *Parser) scanSkipSpace() Token {
+	t := p.scan()
 	if t.Type == SPACE {
 		return p.scan()
 	}
 
-	return t, err
+	return t
 }
