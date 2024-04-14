@@ -17,3 +17,13 @@ func Parse() Args {
 
 	return result
 }
+
+func ParseConfig() string {
+	var result string
+
+	flag.StringVar(&result, "config", "", "configuration file path")
+
+	flag.Parse()
+
+	return result
+}
