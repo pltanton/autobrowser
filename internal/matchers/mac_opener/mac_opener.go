@@ -2,7 +2,6 @@ package mac_opener
 
 import (
 	"github.com/pltanton/autobrowser/internal/matchers"
-	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -26,9 +25,6 @@ func (h *macOpenerMatcher) Match(args map[string]string) bool {
 	if bundlePath, ok := args["bundle_path"]; ok && h.bundlePath != bundlePath {
 		return false
 	}
-	if executablePath, ok := args["executable_path"]; ok && h.executablePath != executablePath {
-		return false
-	}
 
 	return true
 }
@@ -36,14 +32,10 @@ func (h *macOpenerMatcher) Match(args map[string]string) bool {
 var _ matchers.Matcher = &macOpenerMatcher{}
 
 func New(pid int) (matchers.Matcher, error) {
-	executablePath, err := os.Executable()
-	if err != nil {
-		return nil, err
-	}
-
 	displayName := fetchInfo(pid, "displayname")
 	bundleId := fetchInfo(pid, "bundleid")
 	bundlePath := fetchInfo(pid, "bundlepath")
+	executablePath := fetchInfo(pid, "executablepath")
 
 	return &macOpenerMatcher{
 		displayName:    displayName,
