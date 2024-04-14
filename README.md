@@ -67,7 +67,23 @@ Properties:
 
 ### Linux manual
 
-TBD;
+```sh
+go install github.com/pltanton/autobrowser/cmd/autobrowser-linux
+```
+
+Create config at `~/.config/autobrowser.config`.
+Then add the following .desktop file to `~/.local/share/applications/`. Change paths for your setup.
+
+```ini
+[Desktop Entry]
+Categories=Network;WebBrowser
+Exec=~/go/bin/autobrowser-linux -config ~/.config/autobrowser.config -url %u
+Icon=browser
+MimeType=x-scheme-handler/http;x-scheme-handler/https
+Name=Autobrowser: select browser by contextual rules
+Terminal=false
+Type=Application
+```
 
 ### Nixos flakes with Home manager
 
@@ -93,10 +109,10 @@ In your `flake.nix`:
         { 
             programs.autobrowser = {
                 enable = true; 
-                config = [
+                rules = [
                     "firefox 'ext+container:name=Work&url={}':app.class=Slack"
-                    "firefox {}:fallback"
                 ];
+                default = "firefox {}:fallback";
             };
         }
         # ...
