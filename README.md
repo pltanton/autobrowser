@@ -68,7 +68,7 @@ Properties:
 ### Linux manual
 
 ```sh
-go install github.com/pltanton/autobrowser/cmd/autobrowser-linux
+go install github.com/pltanton/autobrowser/cmd/autobrowser-linux@latest
 ```
 
 Create config at `~/.config/autobrowser.config`.
