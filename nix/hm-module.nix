@@ -2,7 +2,7 @@
 with lib;
 let
   cfg = config.programs.autobrowser;
-  configFile = pkgs.writeText "autobrowser.config" (builtins.concatStringsSep "\n" (cfg.rules ++ cfg.default));
+  configFile = pkgs.writeText "autobrowser.config" (builtins.concatStringsSep "\n" (cfg.rules ++ [ "${cfg.default}:fallback" ]));
 in
 {
   options.programs.autobrowser = {

@@ -30,7 +30,7 @@ The application just evaluates configuration rules 1 by 1 and applies url to a f
 <browser_command>:<matcher_knd>.<prop_name>=<prop_value>[;<matcher_knd>.<prop_name>=<prop_value>]
 ```
 
-Browser command is a sequence of words, divided by spaces. The first word is an executable name and the others are arguments. `{}` char sequence will be replaced witch clicked URL.
+Browser command is a sequence of words, divided by spaces. The first word is an executable name and the others are arguments. `{}` char sequence will be replaced with a clicked URL.
 
 You can escape spaces or other _non-word characters_ can be escaped by a single-quote string.
 
@@ -72,7 +72,8 @@ go install github.com/pltanton/autobrowser/cmd/autobrowser-linux
 ```
 
 Create config at `~/.config/autobrowser.config`.
-Then add the following .desktop file to `~/.local/share/applications/`. Change paths for your setup.
+Then add the following .desktop file to `~/.local/share/applications/` and set it as the default browser. 
+Change paths for your setup if needed.
 
 ```ini
 [Desktop Entry]
@@ -112,7 +113,7 @@ In your `flake.nix`:
                 rules = [
                     "firefox 'ext+container:name=Work&url={}':app.class=Slack"
                 ];
-                default = "firefox {}:fallback";
+                default = "firefox {}";
             };
         }
         # ...
