@@ -12,12 +12,18 @@ import (
 	"github.com/pltanton/autobrowser/internal/args"
 	"github.com/pltanton/autobrowser/internal/matchers"
 	"github.com/pltanton/autobrowser/internal/matchers/fallback"
+	"github.com/pltanton/autobrowser/internal/matchers/mac_opener"
 	"github.com/pltanton/autobrowser/internal/matchers/url"
 	"os"
 	"time"
 )
 
-var urlListener chan string = make(chan string)
+type event struct {
+	url string
+	pid int
+}
+
+var eventListener chan event = make(chan event)
 
 func main() {
 	cfg := args.ParseConfig()
@@ -28,11 +34,16 @@ func main() {
 	go func() {
 		timeout := time.After(4 * time.Second)
 		select {
-		case urlStr := <-urlListener:
+		case e := <-eventListener:
+			urlStr := e.url
+			pid := e.pid
 			registry := matchers.NewMatcherRegistry()
 
 			registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
 				return url.New(urlStr)
+			})
+			registry.RegisterLazyRule("mac_opener", func() (matchers.Matcher, error) {
+				return mac_opener.New(pid)
 			})
 			registry.RegisterLazyRule("fallback", fallback.New)
 
@@ -47,6 +58,6 @@ func main() {
 }
 
 //export HandleURL
-func HandleURL(u *C.char) {
-	urlListener <- C.GoString(u)
+func HandleURL(u *C.char, i C.int) {
+	eventListener <- event{url: C.GoString(u), pid: int(i)}
 }

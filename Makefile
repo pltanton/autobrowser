@@ -12,3 +12,6 @@ build-macos:
 	mkdir -p "build/Autobrowser.app"
 	mv build/autobrowser build/Autobrowser.app/autobrowser-bin
 	cp macos/* build/Autobrowser.app
+
+install-macos: build-macos
+	cp -r build/Autobrowser.app ~/Applications
