@@ -63,6 +63,12 @@ func TestLexer_Next(t *testing.T) {
 			inStr: "\n",
 			want:  Token{ENDL, "\n"},
 		},
+
+		{
+			name:  "Lex comment",
+			inStr: "# Hello.={} ;:",
+			want:  Token{COMMENT, "# Hello.={} ;:"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -79,7 +85,7 @@ func TestLexer_Next(t *testing.T) {
 
 func TestLexer_FullSequence(t *testing.T) {
 	input := `
-firefox:url.regex='.*foo.*';app.class=telegram
+firefox:url.regex='.*foo.*';app.class=telegram # Commentary with row description
 'firefox -p work':url.host='github.com'`
 
 	expected := []Token{
@@ -99,6 +105,8 @@ firefox:url.regex='.*foo.*';app.class=telegram
 		{EQ, "="},
 		{VALUE, "telegram"},
 
+		{SPACE, " "},
+		{COMMENT, "# Commentary with row description"},
 		{ENDL, "\n"},
 
 		{VALUE, "firefox -p work"},

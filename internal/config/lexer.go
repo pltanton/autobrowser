@@ -25,6 +25,7 @@ const (
 	SEMICOLON
 	VALUE
 	SPACE
+	COMMENT
 	ENDL
 )
 
@@ -50,6 +51,8 @@ func (t TokenType) String() string {
 		return "SPACE"
 	case ENDL:
 		return "ENDL"
+	case COMMENT:
+		return "COMMENT"
 	}
 	return "UNKNOWN"
 }
@@ -90,6 +93,9 @@ func (l *Lexer) Next() Token {
 	case '\'':
 		l.unreadRune()
 		return l.scanEscapedValue()
+	case '#':
+		l.unreadRune()
+		return l.scanComment()
 	case '=':
 		return Token{EQ, string(r)}
 	case '.':
@@ -144,6 +150,12 @@ func (l *Lexer) scanCharclassSequence(tokenType TokenType, class CharacterClass)
 	}
 }
 
+func (l *Lexer) scanComment() Token {
+	return l.scanCharclassSequence(COMMENT, func(r rune) bool {
+		return r != '\n' && !isEof(r)
+	})
+}
+
 func (l *Lexer) scanWhitespaces() Token {
 	return l.scanCharclassSequence(SPACE, WhitespaceClass)
 }
@@ -153,11 +165,8 @@ func (l *Lexer) scanValue() Token {
 }
 
 func (l *Lexer) scanEscapedValue() Token {
-	r := l.readRune()
-	if r != '\'' {
-		return Token{ILLEGAL, string(r)}
-	}
-
+	// Skip 1st quuote
+	l.readRune()
 	var buf bytes.Buffer
 	for {
 		r := l.readRune()

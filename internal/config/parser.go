@@ -141,8 +141,8 @@ func (p *Parser) parseMatcherDef() (string, string, string, error) {
 	return matcherType, matcherProp, matcherPropValue, nil
 }
 
-// scan scan next token by lexer, using 1 wide window buffer
-func (p *Parser) scan() Token {
+// scan next token by lexer, using 1 wide window buffer
+func (p *Parser) scanRaw() Token {
 	if p.buf.n != 0 {
 		p.buf.n--
 		return p.buf.token
@@ -151,6 +151,15 @@ func (p *Parser) scan() Token {
 	p.buf.token = p.l.Next()
 
 	return p.buf.token
+}
+
+// scan skans with skip of comment
+func (p *Parser) scan() Token {
+	tok := p.scanRaw()
+	if tok.Type == COMMENT {
+		return p.scanRaw()
+	}
+	return tok
 }
 
 func (p *Parser) unscan() {
