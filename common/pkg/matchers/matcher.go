@@ -3,7 +3,7 @@ package matchers
 import (
 	"fmt"
 
-	"github.com/pltanton/autobrowser/internal/config"
+	"github.com/pltanton/autobrowser/common/pkg/config"
 )
 
 type Matcher interface {

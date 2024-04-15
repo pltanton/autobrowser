@@ -14,7 +14,7 @@
           packages.default = pkgs.callPackage ./nix/default.nix { };
 
           devShells.default = pkgs.mkShell {
-            packages = [ pkgs.go ];
+            buildInputs = with pkgs;[ go gnustep.libobjc ]; 
           };
         }) //
     {

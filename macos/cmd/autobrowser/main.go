@@ -1,21 +1,15 @@
 package main
 
-/*
-#cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Cocoa
-#include "browser.h"
-*/
-import "C"
-
 import (
-	"github.com/pltanton/autobrowser/internal/app"
-	"github.com/pltanton/autobrowser/internal/args"
-	"github.com/pltanton/autobrowser/internal/matchers"
-	"github.com/pltanton/autobrowser/internal/matchers/fallback"
-	"github.com/pltanton/autobrowser/internal/matchers/mac_opener"
-	"github.com/pltanton/autobrowser/internal/matchers/url"
 	"os"
 	"time"
+
+	"github.com/pltanton/autobrowser/common/pkg/app"
+	"github.com/pltanton/autobrowser/common/pkg/args"
+	"github.com/pltanton/autobrowser/common/pkg/matchers"
+	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
+	"github.com/pltanton/autobrowser/common/pkg/matchers/url"
+	"github.com/pltanton/autobrowser/macos/internal/matchers/opener"
 )
 
 type event struct {
@@ -42,9 +36,9 @@ func main() {
 			registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
 				return url.New(urlStr)
 			})
-			registry.RegisterLazyRule("mac_opener", func() (matchers.Matcher, error) {
+			registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
 				runningApp := C.GetById(C.int(pid))
-				matcher := mac_opener.MacOpenerMatcher{
+				matcher := opener.MacOpenerMatcher{
 					DisplayName:    C.GoString(C.GetLocalizedName(runningApp)),
 					BundleId:       C.GoString(C.GetBundleIdentifier(runningApp)),
 					BundlePath:     C.GoString(C.GetBundleURL(runningApp)),

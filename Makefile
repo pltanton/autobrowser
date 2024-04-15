@@ -1,17 +1,18 @@
-BUILD_ENVPARAMS:=CGO_ENABLE=0
-
+.PHONY: clean
 clean:
 	rm -rf build
 
 .PHONY: build-linux
 build-linux:
-	$(BUILD_ENVPARAMS) go build -o build/autobrowser cmd/autobrowser-linux/main.go
+	CGO_ENABLE=0 go build -C linux -o build/autobrowser-linux cmd/autobrowser/main.go
 
+.PHONY: build-macos
 build-macos:
-	go build -C cmd/autobrowser-macos -o ../../build/autobrowser .
+	go build -C macos -o build/autobrowser-mac cmd/autobrowser/main.go
 	mkdir -p "build/Autobrowser.app"
-	mv build/autobrowser build/Autobrowser.app/autobrowser-bin
-	cp macos/* build/Autobrowser.app
+	mv build/autobrowser-mac build/Autobrowser.app/autobrowser-bin
+	cp macos/assets/* build/Autobrowser.app
 
+.PHONY: install-macos
 install-macos: build-macos
 	cp -r build/Autobrowser.app ~/Applications

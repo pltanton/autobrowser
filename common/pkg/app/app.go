@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pltanton/autobrowser/internal/args"
-	"github.com/pltanton/autobrowser/internal/config"
-	"github.com/pltanton/autobrowser/internal/matchers"
+	"github.com/pltanton/autobrowser/common/pkg/args"
+	"github.com/pltanton/autobrowser/common/pkg/config"
+	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
 func SetupAndRun(cfg args.Args, registry *matchers.MatchersRegistry) {

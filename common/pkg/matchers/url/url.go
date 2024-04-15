@@ -5,7 +5,7 @@ import (
 	neturl "net/url"
 	"regexp"
 
-	"github.com/pltanton/autobrowser/internal/matchers"
+	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
 type urlMatcher struct {
