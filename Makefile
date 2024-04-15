@@ -8,9 +8,10 @@ build-linux:
 
 .PHONY: build-macos
 build-macos:
-	go build -C macos -o build/autobrowser-mac cmd/autobrowser/main.go
+	#go build -C macos -o build/autobrowser-mac cmd/autobrowser/main.go TODO find the way to include objc without hacks
+	go build -C macos/cmd/autobrowser -o ../../../build/autobrowser-mac .
 	mkdir -p "build/Autobrowser.app"
-	mv build/autobrowser-mac build/Autobrowser.app/autobrowser-bin
+	mv build/autobrowser-mac build/Autobrowser.app/autobrowser
 	cp macos/assets/* build/Autobrowser.app
 
 .PHONY: install-macos

@@ -1,5 +1,11 @@
 package main
 
+/*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Cocoa
+#include "browser.h"
+*/
+import "C"
 import (
 	"os"
 	"time"
@@ -30,12 +36,15 @@ func main() {
 		select {
 		case e := <-eventListener:
 			urlStr := e.url
+			pid := e.pid
 			registry := matchers.NewMatcherRegistry()
 
 			registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
 				return url.New(urlStr)
 			})
-			registry.RegisterLazyRule("app", opener.New)
+			registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
+				return opener.New(pid)
+			})
 			registry.RegisterLazyRule("fallback", fallback.New)
 
 			app.SetupAndRun(args.Args{ConfigPath: cfg, Url: urlStr}, registry)

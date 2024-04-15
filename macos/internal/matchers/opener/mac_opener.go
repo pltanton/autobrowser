@@ -3,7 +3,23 @@ package opener
 /*
 #cgo CFLAGS: -x objective-c
 #cgo LDFLAGS: -framework Cocoa
-#include "browser.h"
+#import <Cocoa/Cocoa.h>
+
+NSRunningApplication *GetById(int pid) {
+    return [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+}
+char* GetLocalizedName(NSRunningApplication* runningApp) {
+  return [[runningApp localizedName] UTF8String];
+}
+char* GetBundleIdentifier(NSRunningApplication* runningApp) {
+  return [[runningApp bundleIdentifier] UTF8String];
+}
+char* GetBundleURL(NSRunningApplication* runningApp) {
+  return [[[runningApp bundleURL] absoluteString] UTF8String];
+}
+char* GetExecutableURL(NSRunningApplication* runningApp) {
+  return [[[runningApp executableURL] absoluteString] UTF8String];
+}
 */
 import "C"
 
@@ -38,7 +54,7 @@ func (h *macOpenerMatcher) Match(args map[string]string) bool {
 	return true
 }
 
-func New() (matchers.Matcher, error) {
+func New(pid int) (matchers.Matcher, error) {
 	runningApp := C.GetById(C.int(pid))
 	return &macOpenerMatcher{
 		DisplayName:    C.GoString(C.GetLocalizedName(runningApp)),
