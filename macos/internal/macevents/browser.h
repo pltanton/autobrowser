@@ -8,6 +8,7 @@ extern void handleURL(char*, int);
 
 void RunApp();
 
+NSRunningApplication *GetById(int pid);
 char* GetLocalizedName(NSRunningApplication* runningApp);
 char* GetBundleIdentifier(NSRunningApplication* runningApp);
 char* GetBundleURL(NSRunningApplication* runningApp);

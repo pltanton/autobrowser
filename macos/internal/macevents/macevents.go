@@ -48,10 +48,11 @@ type AppInfo struct {
 }
 
 func GetRunningAppInfo(pid int) AppInfo {
+	app := C.GetById(C.int(pid))
 	return AppInfo{
-		LocalizedName:  C.GoString(C.GetLocalizedName(pid)),
-		BundleId:       C.GoString(C.GetBundleIdentifier(pid)),
-		BundlePath:     C.GoString(C.GetBundleURL(pid)),
-		ExecutablePath: C.GoString(C.GetExecutableURL(pid)),
+		LocalizedName:  C.GoString(C.GetLocalizedName(app)),
+		BundleId:       C.GoString(C.GetBundleIdentifier(app)),
+		BundlePath:     C.GoString(C.GetBundleURL(app)),
+		ExecutablePath: C.GoString(C.GetExecutableURL(app)),
 	}
 }
