@@ -16,13 +16,13 @@ func (h *macOpenerMatcher) Match(args map[string]string) bool {
 	if displayName, ok := args["display_name"]; ok && h.sourceApp.LocalizedName != displayName {
 		return false
 	}
-	if bundleId, ok := args["bundle_id"]; ok && h.sourceApp.BundleId != bundleId {
+	if bundleId, ok := args["bundle_id"]; ok && h.sourceApp.BundleID != bundleId {
 		return false
 	}
-	if bundlePath, ok := args["bundle_path"]; ok && h.sourceApp.BundlePath != bundlePath {
+	if bundlePath, ok := args["bundle_path"]; ok && h.sourceApp.BundleURL != bundlePath {
 		return false
 	}
-	if executablePath, ok := args["executable_path"]; ok && h.sourceApp.ExecutablePath != executablePath {
+	if executablePath, ok := args["executable_path"]; ok && h.sourceApp.ExecutableURL != executablePath {
 		return false
 	}
 

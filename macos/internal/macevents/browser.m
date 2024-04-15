@@ -29,8 +29,16 @@ void RunApp(void) {
   [NSApp run];
 }
 
-NSRunningApplication *GetById(int pid) {
-    return [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+struct AppInfo GetById(int pid) {
+  NSRunningApplication* runningApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+
+  struct AppInfo result;
+  result.LocalizedName = [[runningApp localizedName] UTF8String];
+  result.BundleID = [[runningApp bundleIdentifier] UTF8String];
+  result.BundleURL = [[[runningApp bundleURL] absoluteString] UTF8String];
+  result.ExecutableURL = [[[runningApp executableURL] absoluteString] UTF8String];
+
+  return result;
 }
 char* GetLocalizedName(NSRunningApplication* runningApp) {
   return [[runningApp localizedName] UTF8String];

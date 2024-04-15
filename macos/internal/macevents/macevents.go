@@ -41,18 +41,19 @@ func handleURL(u *C.char, i C.int) {
 }
 
 type AppInfo struct {
-	LocalizedName  string
-	BundleId       string
-	BundlePath     string
-	ExecutablePath string
+	LocalizedName string
+	BundleID      string
+	BundleURL     string
+	ExecutableURL string
 }
 
+
 func GetRunningAppInfo(pid int) AppInfo {
-	app := C.GetById(C.int(pid))
+	appInfo := C.GetById(C.int(pid))
 	return AppInfo{
-		LocalizedName:  C.GoString(C.GetLocalizedName(app)),
-		BundleId:       C.GoString(C.GetBundleIdentifier(app)),
-		BundlePath:     C.GoString(C.GetBundleURL(app)),
-		ExecutablePath: C.GoString(C.GetExecutableURL(app)),
+		LocalizedName: C.GoString(appInfo.LocalizedName),
+		BundleID: C.GoString(appInfo.BundleID),
+		BundleURL: C.GoString(appInfo.BundleURL),
+		ExecutableURL: C.GoString(appInfo.ExecutableURL),
 	}
 }
