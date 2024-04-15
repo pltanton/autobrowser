@@ -1,6 +1,9 @@
 package args
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 type Args struct {
 	ConfigPath string
@@ -9,8 +12,8 @@ type Args struct {
 
 func Parse() Args {
 	result := Args{}
-
-	flag.StringVar(&result.ConfigPath, "config", "", "configuration file path")
+	dir, _ := os.UserHomeDir()
+	flag.StringVar(&result.ConfigPath, "config", dir+"/.config/autobrowser.config", "configuration file path")
 	flag.StringVar(&result.Url, "url", "", "url to open")
 
 	flag.Parse()
@@ -21,7 +24,8 @@ func Parse() Args {
 func ParseConfig() string {
 	var result string
 
-	flag.StringVar(&result, "config", "", "configuration file path")
+	dir, _ := os.UserHomeDir()
+	flag.StringVar(&result, "config", dir+"/.config/autobrowser.config", "configuration file path")
 
 	flag.Parse()
 
