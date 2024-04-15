@@ -2,57 +2,31 @@ package mac_opener
 
 import (
 	"github.com/pltanton/autobrowser/internal/matchers"
-	"os/exec"
-	"regexp"
-	"strconv"
 )
 
-type macOpenerMatcher struct {
-	displayName    string
-	bundleId       string
-	bundlePath     string
-	executablePath string
+type MacOpenerMatcher struct {
+	DisplayName    string
+	BundleId       string
+	BundlePath     string
+	ExecutablePath string
 }
 
 // Match implements matchers.Matcher.
-func (h *macOpenerMatcher) Match(args map[string]string) bool {
-	if displayName, ok := args["display_name"]; ok && h.displayName != displayName {
+func (h *MacOpenerMatcher) Match(args map[string]string) bool {
+	if displayName, ok := args["display_name"]; ok && h.DisplayName != displayName {
 		return false
 	}
-	if bundleId, ok := args["bundle_id"]; ok && h.bundleId != bundleId {
+	if bundleId, ok := args["bundle_id"]; ok && h.BundleId != bundleId {
 		return false
 	}
-	if bundlePath, ok := args["bundle_path"]; ok && h.bundlePath != bundlePath {
+	if bundlePath, ok := args["bundle_path"]; ok && h.BundlePath != bundlePath {
+		return false
+	}
+	if executablePath, ok := args["executable_path"]; ok && h.ExecutablePath != executablePath {
 		return false
 	}
 
 	return true
 }
 
-var _ matchers.Matcher = &macOpenerMatcher{}
-
-func New(pid int) (matchers.Matcher, error) {
-	displayName := fetchInfo(pid, "displayname")
-	bundleId := fetchInfo(pid, "bundleid")
-	bundlePath := fetchInfo(pid, "bundlepath")
-	executablePath := fetchInfo(pid, "executablepath")
-
-	return &macOpenerMatcher{
-		displayName:    displayName,
-		bundleId:       bundleId,
-		bundlePath:     bundlePath,
-		executablePath: executablePath,
-	}, nil
-}
-
-func fetchInfo(pid int, param string) string {
-	info := exec.Command("lsappinfo", "info", "-only", param, "#"+strconv.Itoa(pid))
-	output, _ := info.CombinedOutput()
-	outputString := string(output)
-	if outputString == "" {
-		return ""
-	}
-	regex := regexp.MustCompile("\".+\"=\"(?P<Value>.+)\"")
-	match := regex.FindStringSubmatch(outputString)
-	return match[1]
-}
+var _ matchers.Matcher = &MacOpenerMatcher{}

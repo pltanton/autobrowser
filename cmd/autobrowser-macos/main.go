@@ -43,7 +43,14 @@ func main() {
 				return url.New(urlStr)
 			})
 			registry.RegisterLazyRule("mac_opener", func() (matchers.Matcher, error) {
-				return mac_opener.New(pid)
+				runningApp := C.GetById(C.int(pid))
+				matcher := mac_opener.MacOpenerMatcher{
+					DisplayName:    C.GoString(C.GetLocalizedName(runningApp)),
+					BundleId:       C.GoString(C.GetBundleIdentifier(runningApp)),
+					BundlePath:     C.GoString(C.GetBundleURL(runningApp)),
+					ExecutablePath: C.GoString(C.GetExecutableURL(runningApp)),
+				}
+				return &matcher, nil
 			})
 			registry.RegisterLazyRule("fallback", fallback.New)
 

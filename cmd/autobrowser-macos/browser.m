@@ -28,3 +28,19 @@ void RunApp(void) {
   [NSApp setDelegate:app];
   [NSApp run];
 }
+
+NSRunningApplication *GetById(int pid) {
+    return [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+}
+char* GetLocalizedName(NSRunningApplication* runningApp) {
+  return [[runningApp localizedName] UTF8String];
+}
+char* GetBundleIdentifier(NSRunningApplication* runningApp) {
+  return [[runningApp bundleIdentifier] UTF8String];
+}
+char* GetBundleURL(NSRunningApplication* runningApp) {
+  return [[[runningApp bundleURL] absoluteString] UTF8String];
+}
+char* GetExecutableURL(NSRunningApplication* runningApp) {
+  return [[[runningApp executableURL] absoluteString] UTF8String];
+}
