@@ -13,8 +13,12 @@
         {
           packages.default = pkgs.callPackage ./nix/default.nix { };
 
-          devShells.default = pkgs.mkShell {
-            buildInputs = with pkgs;[ go gnustep.libobjc ]; 
+          devShells.default = with pkgs; mkShell {
+            buildInputs = [ go clang gnustep.libobjc ];
+            CC = "clang";
+            shellHook = ''
+              export CC="clang"
+            '';
           };
         }) //
     {

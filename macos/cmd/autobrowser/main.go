@@ -30,22 +30,12 @@ func main() {
 		select {
 		case e := <-eventListener:
 			urlStr := e.url
-			pid := e.pid
 			registry := matchers.NewMatcherRegistry()
 
 			registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
 				return url.New(urlStr)
 			})
-			registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
-				runningApp := C.GetById(C.int(pid))
-				matcher := opener.MacOpenerMatcher{
-					DisplayName:    C.GoString(C.GetLocalizedName(runningApp)),
-					BundleId:       C.GoString(C.GetBundleIdentifier(runningApp)),
-					BundlePath:     C.GoString(C.GetBundleURL(runningApp)),
-					ExecutablePath: C.GoString(C.GetExecutableURL(runningApp)),
-				}
-				return &matcher, nil
-			})
+			registry.RegisterLazyRule("app", opener.New)
 			registry.RegisterLazyRule("fallback", fallback.New)
 
 			app.SetupAndRun(args.Args{ConfigPath: cfg, Url: urlStr}, registry)
