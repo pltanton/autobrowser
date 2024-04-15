@@ -1,16 +1,34 @@
 package main
 
 import (
+	"flag"
+	"os"
+
 	"github.com/pltanton/autobrowser/common/pkg/app"
-	"github.com/pltanton/autobrowser/common/pkg/args"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/url"
 	"github.com/pltanton/autobrowser/linux/internal/matchers/hyprland"
 )
 
+type args struct {
+	ConfigPath string
+	Url        string
+}
+
+func parseArgs() args {
+	result := args{}
+	dir, _ := os.UserHomeDir()
+	flag.StringVar(&result.ConfigPath, "config", dir+"/.config/autobrowser.config", "configuration file path")
+	flag.StringVar(&result.Url, "url", "", "url to open")
+
+	flag.Parse()
+
+	return result
+}
+
 func main() {
-	cfg := args.Parse()
+	cfg := parseArgs()
 
 	registry := matchers.NewMatcherRegistry()
 
@@ -21,5 +39,5 @@ func main() {
 	registry.RegisterLazyRule("app", hyprland.New)
 	registry.RegisterLazyRule("fallback", fallback.New)
 
-	app.SetupAndRun(cfg, registry)
+	app.SetupAndRun(cfg.ConfigPath, cfg.Url, registry)
 }

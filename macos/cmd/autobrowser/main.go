@@ -1,63 +1,52 @@
 package main
 
-/*
-#cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Cocoa
-#include "browser.h"
-*/
-import "C"
 import (
+	"flag"
+	"log"
 	"os"
 	"time"
 
 	"github.com/pltanton/autobrowser/common/pkg/app"
-	"github.com/pltanton/autobrowser/common/pkg/args"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/url"
+	"github.com/pltanton/autobrowser/macos/internal/macevents"
 	"github.com/pltanton/autobrowser/macos/internal/matchers/opener"
 )
 
-type event struct {
-	url string
-	pid int
-}
+func parseConfig() string {
+	var result string
 
-var eventListener chan event = make(chan event)
+	dir, _ := os.UserHomeDir()
+	flag.StringVar(&result, "config", dir+"/.config/autobrowser.config", "configuration file path")
+
+	flag.Parse()
+
+	return result
+}
 
 func main() {
-	cfg := args.ParseConfig()
+	cfg := parseConfig()
 	if cfg == "" {
-		panic("Config path is not provided")
+		log.Fatalln("Please provide config by -config parameter")
 	}
 
-	go func() {
-		timeout := time.After(4 * time.Second)
-		select {
-		case e := <-eventListener:
-			urlStr := e.url
-			pid := e.pid
-			registry := matchers.NewMatcherRegistry()
+	urlEvent, err := macevents.WaitForURL(2 * time.Second)
+	if err != nil {
+		log.Fatalln("Failed to recieve url event: ", err)
+	}
 
-			registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
-				return url.New(urlStr)
-			})
-			registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
-				return opener.New(pid)
-			})
-			registry.RegisterLazyRule("fallback", fallback.New)
+	registry := matchers.NewMatcherRegistry()
 
-			app.SetupAndRun(args.Args{ConfigPath: cfg, Url: urlStr}, registry)
-			os.Exit(0)
-		case <-timeout:
-			os.Exit(1)
-		}
-	}()
+	registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
+		return url.New(urlEvent.URL)
+	})
 
-	C.RunApp()
-}
+	registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
+		return opener.New(urlEvent.PID)
+	})
 
-//export HandleURL
-func HandleURL(u *C.char, i C.int) {
-	eventListener <- event{url: C.GoString(u), pid: int(i)}
+	registry.RegisterLazyRule("fallback", fallback.New)
+
+	app.SetupAndRun(cfg, urlEvent.URL, registry)
 }

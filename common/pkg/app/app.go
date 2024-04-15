@@ -8,13 +8,12 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pltanton/autobrowser/common/pkg/args"
 	"github.com/pltanton/autobrowser/common/pkg/config"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
-func SetupAndRun(cfg args.Args, registry *matchers.MatchersRegistry) {
-	configFile, err := os.Open(cfg.ConfigPath)
+func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegistry) {
+	configFile, err := os.Open(configPath)
 	if err != nil {
 		log.Fatalf("Failed to open cofig file: %s", err)
 	}
@@ -35,7 +34,7 @@ func SetupAndRun(cfg args.Args, registry *matchers.MatchersRegistry) {
 			// Replace all placeholders in command to url
 			command := rule.Command
 			for i := range command {
-				command[i] = strings.Replace(command[i], "{}", cfg.Url, 1)
+				command[i] = strings.Replace(command[i], "{}", url, 1)
 			}
 
 			cmd := exec.Command(command[0], command[1:]...)
