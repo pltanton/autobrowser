@@ -27,7 +27,7 @@ func WaitForURL(timeout time.Duration) (URLEvent, error) {
 
 	select {
 	case e := <-eventListener:
-		return e
+		return e, nil
 	case <-cancel:
 		return URLEvent{}, fmt.Errorf("failed to get url event, timeout reached")
 	}
