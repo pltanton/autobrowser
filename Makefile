@@ -8,9 +8,9 @@ build-linux:
 
 .PHONY: build-macos
 build-macos: clean
-	go build -C macos -o ../build/Autobrowser.App/autobrowser-bin cmd/autobrowser/main.go 
 	mkdir -p "build/Autobrowser.app"
 	cp macos/assets/* build/Autobrowser.app
+	go build -C macos -o ../build/Autobrowser.App/autobrowser cmd/autobrowser/main.go 
 
 .PHONY: install-macos
 install-macos: build-macos
