@@ -7,11 +7,9 @@ build-linux:
 	CGO_ENABLE=0 go build -C linux -o build/autobrowser-linux cmd/autobrowser/main.go
 
 .PHONY: build-macos
-build-macos:
-	#go build -C macos -o build/autobrowser-mac cmd/autobrowser/main.go TODO find the way to include objc without hacks
-	go build -C macos/cmd/autobrowser -o ../../../build/autobrowser-mac .
+build-macos: clean
+	go build -C macos -o ../build/Autobrowser.App/autobrowser-bin cmd/autobrowser/main.go 
 	mkdir -p "build/Autobrowser.app"
-	mv build/autobrowser-mac build/Autobrowser.app/autobrowser
 	cp macos/assets/* build/Autobrowser.app
 
 .PHONY: install-macos

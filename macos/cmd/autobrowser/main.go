@@ -26,6 +26,7 @@ func parseConfig() string {
 }
 
 func main() {
+	log.Println("Autobrowser launhed")
 	cfg := parseConfig()
 	if cfg == "" {
 		log.Fatalln("Please provide config by -config parameter")
@@ -34,7 +35,7 @@ func main() {
 	macevents.StartListenNCEvents()
 	defer macevents.StopListenNCEvents()
 
-	urlEvent, err := macevents.WaitForURL(2 * time.Second)
+	urlEvent, err := macevents.WaitForURL(4 * time.Second)
 	if err != nil {
 		log.Fatalln("Failed to recieve url event: ", err)
 	}
