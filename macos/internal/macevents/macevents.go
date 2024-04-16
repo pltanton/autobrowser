@@ -29,8 +29,6 @@ func handleURL(u *C.char, i C.int) {
 func WaitForURL(timeout time.Duration) (URLEvent, error) {
 	cancel := time.After(timeout)
 
-	var closure URLEvent
-
 	go C.RunApp()
 	defer C.StopApp()
 
@@ -38,7 +36,7 @@ func WaitForURL(timeout time.Duration) (URLEvent, error) {
 	case e := <-urlChan:
 		return e, nil
 	case <-cancel:
-		return closure, fmt.Errorf("failed to get event, timeout reached")
+		return URLEvent{}, fmt.Errorf("failed to get event, timeout reached")
 	}
 }
 
