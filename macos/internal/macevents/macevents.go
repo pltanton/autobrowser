@@ -30,12 +30,10 @@ func StopListenNCEvents() {
 
 // WaitForURL wait for URL event at URL chan or return error
 func WaitForURL(timeout time.Duration) (URLEvent, error) {
-	var eventListener chan URLEvent = make(chan URLEvent)
-
 	cancel := time.After(timeout)
 
 	select {
-	case e := <-eventListener:
+	case e := <-urlEventChan:
 		return e, nil
 	case <-cancel:
 		return URLEvent{}, fmt.Errorf("failed to get url event, timeout reached")
