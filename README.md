@@ -44,12 +44,19 @@ This matcher always succeeds. Use it at the end of a configuration to specify th
 
 Matches by source application.
 
-Currently supported desktop environments: _hyprland_, _gnome_ (TODO), _macos_ (TODO).
+Currently supported desktop environments: _hyprland_, _gnome_ (TODO), _macos_.
 
-Properties:
+Hyprland Properties:
 
 - *title*: match by source window title with regex
 - *class*: match by window class
+
+MacOS Properties:
+
+- *display_name* - match by app display name (ex: `Slack`)
+- *bundle_id* - match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
+- *bundle_path* - match by App Bundle path (ex: `/Applications/Slack.app`)
+- *executable_path* - match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
 
 ### url
 
