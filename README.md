@@ -7,8 +7,8 @@ Automatically choosing web-browser depends on environment context rules.
 - suckless solution with no redundant dependencies
 - fast single binary
 - simple rule engine with custom interpretable DSL
-- extendible (TODO)
-- crossplatform (TODO)
+- extendable (TODO)
+- cross-platform
 
 # Configuration
 
@@ -21,6 +21,8 @@ firefox 'ext+container:name=Isolated&url={}':app.class=org.telegram.desktop # Op
 # Default fallback
 firefox {}:fallback
 ```
+
+Other examples can be found in `examples` folder
 
 ## Configuration syntax
 
@@ -128,3 +130,9 @@ In your `flake.nix`:
     };
   };
 ```
+
+
+# Acknowledgements
+
+* [b-r-o-w-s-e](https://github.com/BlakeWilliams/b-r-o-w-s-e) project and [related article](https://blakewilliams.me/posts/handling-macos-url-schemes-with-go): great example of handling URLs with Golang on macOS
+* [Finicky](https://github.com/johnste/finicky) project: inspiration for Autobrowser, good example of handling more complex URL events
