@@ -1,6 +1,6 @@
 package fallback
 
-import "github.com/pltanton/autobrowser/internal/matchers"
+import "github.com/pltanton/autobrowser/common/pkg/matchers"
 
 type fallbackMatcher struct {
 }

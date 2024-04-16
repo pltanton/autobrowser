@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	ipc "github.com/labi-le/hyprland-ipc-client"
-	"github.com/pltanton/autobrowser/internal/matchers"
+	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
 type hyprlandMatcher struct {

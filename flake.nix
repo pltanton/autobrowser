@@ -13,8 +13,22 @@
         {
           packages.default = pkgs.callPackage ./nix/default.nix { };
 
-          devShells.default = pkgs.mkShell {
-            packages = [ pkgs.go ];
+          devShells.default = with pkgs; mkShell {
+            buildInputs = [ 
+              go 
+              clang 
+              gnustep.make 
+              gnustep.base 
+              gnustep.gui 
+              gnustep.libobjc 
+              gnustep.stdenv
+              gnustep.gworkspace
+            ];
+            CC = "clang";
+            shellHook = ''
+              export CC="clang"
+              export CGO="-fobjc-nonfragile-abi"
+            '';
           };
         }) //
     {
