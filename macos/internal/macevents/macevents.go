@@ -20,7 +20,7 @@ type URLEvent struct {
 
 // StartListenNCEvents starts goroutine with Cocoa listener. Unsafe.
 func StartListenNCEvents() {
-	go C.RunApp()
+	C.RunApp()
 }
 
 // StartListenNCEvents starts goroutine with Cocoa listener. Unsafe.
