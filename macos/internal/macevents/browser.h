@@ -7,6 +7,7 @@ extern void handleURL(char*, int);
 @end
 
 void RunApp();
+void StopApp();
 
 struct AppInfo{
   const char* LocalizedName;

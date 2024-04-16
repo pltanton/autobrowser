@@ -31,6 +31,9 @@ func main() {
 		log.Fatalln("Please provide config by -config parameter")
 	}
 
+	macevents.StartListenNCEvents()
+	defer macevents.StopListenNCEvents()
+
 	urlEvent, err := macevents.WaitForURL(2 * time.Second)
 	if err != nil {
 		log.Fatalln("Failed to recieve url event: ", err)

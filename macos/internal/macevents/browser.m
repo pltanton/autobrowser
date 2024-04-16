@@ -29,6 +29,10 @@ void RunApp(void) {
   [NSApp run];
 }
 
+void StopApp(void) {
+  [NSApp stop:nil];
+}
+
 struct AppInfo GetById(int pid) {
   NSRunningApplication* runningApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
 

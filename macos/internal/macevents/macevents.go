@@ -18,12 +18,21 @@ type URLEvent struct {
 	PID int
 }
 
+// StartListenNCEvents starts goroutine with Cocoa listener. Unsafe.
+func StartListenNCEvents() {
+	go C.RunApp()
+}
+
+// StartListenNCEvents starts goroutine with Cocoa listener. Unsafe.
+func StopListenNCEvents() {
+	C.StopApp()
+}
+
+// WaitForURL wait for URL event at URL chan or return error
 func WaitForURL(timeout time.Duration) (URLEvent, error) {
 	var eventListener chan URLEvent = make(chan URLEvent)
 
 	cancel := time.After(timeout)
-
-	C.RunApp()
 
 	select {
 	case e := <-eventListener:
@@ -47,14 +56,13 @@ type AppInfo struct {
 	ExecutableURL string
 }
 
-
 func GetRunningAppInfo(pid int) AppInfo {
 	appInfo := C.GetById(C.int(pid))
 	fmt.Println(appInfo)
 	return AppInfo{
 		LocalizedName: C.GoString(appInfo.LocalizedName),
-		BundleID: C.GoString(appInfo.BundleID),
-		BundleURL: C.GoString(appInfo.BundleURL),
+		BundleID:      C.GoString(appInfo.BundleID),
+		BundleURL:     C.GoString(appInfo.BundleURL),
 		ExecutableURL: C.GoString(appInfo.ExecutableURL),
 	}
 }
