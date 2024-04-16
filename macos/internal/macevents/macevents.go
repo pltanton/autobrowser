@@ -18,10 +18,6 @@ type URLEvent struct {
 	PID int
 }
 
-func start() {
-	C.RunApp()
-}
-
 var urlChan = make(chan URLEvent)
 
 //export handleURL
@@ -29,35 +25,21 @@ func handleURL(u *C.char, i C.int) {
 	urlChan <- URLEvent{URL: C.GoString(u), PID: int(i)}
 }
 
-// StartListenNCEvents starts goroutine with Cocoa listener. Unsafe.
-func stop() {
-	C.StopApp()
-}
-
 // WaitForURL wait for URL event at URL chan or return error
 func WaitForURL(timeout time.Duration) (URLEvent, error) {
 	cancel := time.After(timeout)
 
 	var closure URLEvent
-	var ok bool
 
-	go func() {
-		select {
-		case e := <-urlChan:
-			ok = true
-			closure = e
-			stop()
-		case <-cancel:
-			stop()
-		}
-	}()
+	go C.RunApp()
+	defer C.StopApp()
 
-	start()
-
-	if !ok {
+	select {
+	case e := <-urlChan:
+		return e, nil
+	case <-cancel:
 		return closure, fmt.Errorf("failed to get event, timeout reached")
 	}
-	return closure, nil
 }
 
 type AppInfo struct {
