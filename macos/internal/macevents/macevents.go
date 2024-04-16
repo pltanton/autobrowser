@@ -50,6 +50,7 @@ type AppInfo struct {
 
 func GetRunningAppInfo(pid int) AppInfo {
 	appInfo := C.GetById(C.int(pid))
+	fmt.Println(appInfo)
 	return AppInfo{
 		LocalizedName: C.GoString(appInfo.LocalizedName),
 		BundleID: C.GoString(appInfo.BundleID),

@@ -9,10 +9,10 @@ extern void handleURL(char*, int);
 void RunApp();
 
 struct AppInfo{
-  char* LocalizedName;
-  char* BundleID;  
-  char* BundleURL;
-  char* ExecutableURL;
+  const char* LocalizedName;
+  const char* BundleID;  
+  const char* BundleURL;
+  const char* ExecutableURL;
 };
 
 struct AppInfo GetById(int pid);
