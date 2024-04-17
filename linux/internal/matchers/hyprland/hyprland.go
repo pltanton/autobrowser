@@ -44,23 +44,6 @@ var _ matchers.Matcher = &hyprlandMatcher{}
 
 func New() (matchers.Matcher, error) {
 	c := ipc.NewClient(os.Getenv("HYPRLAND_INSTANCE_SIGNATURE"))
-	clients, err := c.Clients()
-	if err != nil {
-		log.Println("Failed to fetch hyprland's clients, rulle will not be applied! Error: ", err)
-	}
-
-	ppid := os.Getppid()
-
-	for _, client := range clients {
-		if client.Pid != ppid {
-			continue
-		}
-
-		return &hyprlandMatcher{
-			class: client.Class,
-			title: client.Title,
-		}, nil
-	}
 
 	window, err := c.ActiveWindow()
 	if err != nil {
