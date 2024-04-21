@@ -3,7 +3,7 @@ package app
 import (
 	"errors"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,19 +15,22 @@ import (
 func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegistry) {
 	configFile, err := os.Open(configPath)
 	if err != nil {
-		log.Fatalf("Failed to open cofig file: %s", err)
+		slog.Error("Failed to open cofig file: %s", err)
+		os.Exit(1)
 	}
 
 	parser := config.NewParser(configFile)
 
 	for rule, err := parser.ParseRule(); !errors.Is(err, io.EOF); rule, err = parser.ParseRule() {
 		if err != nil {
-			log.Fatalf("Failed to parse rule: %s", err)
+			slog.Info("Failed to parse rule", "err", err)
+			os.Exit(1)
 		}
 
 		matches, err := registry.EvalRule(rule)
 		if err != nil {
-			log.Fatalf("Failed to evaluate rule: %v", err)
+			slog.Info("Failed to evaluate rule", "err", err)
+			os.Exit(1)
 		}
 
 		if matches {
@@ -39,11 +42,12 @@ func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegis
 
 			cmd := exec.Command(command[0], command[1:]...)
 			if err := cmd.Run(); err != nil {
-				log.Fatalln("Failed to run command: ", err)
+				slog.Error("Failed to run command", "err", err)
+				os.Exit(1)
 			}
 			return
 		}
 	}
 
-	log.Println("Nothing matched, please specify 'fallback' rule to setup default browser!")
+	slog.Info("Nothing matched, please specify 'fallback' rule to setup default browser!")
 }

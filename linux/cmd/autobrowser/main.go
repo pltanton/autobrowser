@@ -1,43 +1,26 @@
 package main
 
 import (
-	"flag"
-	"os"
-
 	"github.com/pltanton/autobrowser/common/pkg/app"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
-	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
-	"github.com/pltanton/autobrowser/common/pkg/matchers/url"
-	"github.com/pltanton/autobrowser/linux/internal/matchers/hyprland"
+	"github.com/pltanton/autobrowser/common/pkg/matchers/urlmatcher"
+	"github.com/pltanton/autobrowser/common/pkg/utils"
+	"github.com/pltanton/autobrowser/linux/internal/deinfo"
+	"github.com/pltanton/autobrowser/linux/internal/envx"
+	"github.com/pltanton/autobrowser/linux/internal/matchers/appmatcher"
 )
 
-type args struct {
-	ConfigPath string
-	Url        string
-}
-
-func parseArgs() args {
-	result := args{}
-	dir, _ := os.UserHomeDir()
-	flag.StringVar(&result.ConfigPath, "config", dir+"/.config/autobrowser.config", "configuration file path")
-	flag.StringVar(&result.Url, "url", "", "url to open")
-
-	flag.Parse()
-
-	return result
-}
-
 func main() {
-	cfg := parseArgs()
+	options := envx.GetOptions()
+	utils.SetLogLevel(options.LogLevel)
 
 	registry := matchers.NewMatcherRegistry()
 
-	registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
-		return url.New(cfg.Url)
-	})
+	// Might be reused to fetch other stuff for other providers
+	deInfoProvider := deinfo.New(options.Mode)
 
-	registry.RegisterLazyRule("app", hyprland.New)
-	registry.RegisterLazyRule("fallback", fallback.New)
+	registry.RegisterRule("url", urlmatcher.New(options.Url))
+	registry.RegisterRule("app", appmatcher.New(deInfoProvider))
 
-	app.SetupAndRun(cfg.ConfigPath, cfg.Url, registry)
+	app.SetupAndRun(options.ConfigPath, options.Url, registry)
 }

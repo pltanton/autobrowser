@@ -1,2 +1,4 @@
+github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
+github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/labi-le/hyprland-ipc-client v1.0.3 h1:NvfazDlMf/pKl8sAqAO7BUwLEo3xxBcGgMP8PKT7R6g=
 github.com/labi-le/hyprland-ipc-client v1.0.3/go.mod h1:JZ+LBSfp0aO33qOm6TMYqe7qD8CO9d8jMpGpqz6Yf3I=

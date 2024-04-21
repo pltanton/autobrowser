@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -26,15 +27,17 @@ func parseConfig() string {
 }
 
 func main() {
-	log.Println("Autobrowser launched")
+	slog.Debug("Autobrowser launched")
 	cfg := parseConfig()
 	if cfg == "" {
-		log.Fatalln("Please provide config by -config parameter")
+		slog.Error("Please provide config by -config parameter")
+		os.Exit(1)
 	}
 
 	urlEvent, err := macevents.WaitForURL(4 * time.Second)
 	if err != nil {
-		log.Fatalln("Failed to receive url event: ", err)
+		slog.Error("Failed to receive url event: ", err)
+		os.Exit(1)
 	}
 
 	registry := matchers.NewMatcherRegistry()
