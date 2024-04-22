@@ -25,25 +25,8 @@ jobs:
         name: autobrowser
         path: out/autobrowser 
 
-  package:
-    needs: build 
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: 'linux/go.mod'
-        cache-dependency-path: 'linux/go.sum'
     - name: Install nFPM
       run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
-
-    - uses: actions/download-artifact@v4
-      with:
-        name: autobrowser
-        path: out
 
     - name: Build packages
       run: |
