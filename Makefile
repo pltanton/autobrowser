@@ -4,7 +4,7 @@ clean:
 
 .PHONY: build-linux
 build-linux:
-	CGO_ENABLE=0 go build -C linux -o out/autobrowser-linux cmd/autobrowser/main.go
+	CGO_ENABLE=0 go build -C linux -o ../out/autobrowser cmd/autobrowser/main.go
 
 .PHONY: build-macos
 build-macos: clean

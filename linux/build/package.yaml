@@ -1,0 +1,15 @@
+meta:
+  description: Autobrowser
+  vendor: plotnikovanton@gmail.com
+  maintainer: plotnikovanton@gmail.com
+files:
+  "/usr/bin/autobrowser":
+    file: out/autobrowser 
+    mode: "0755"
+    user: "root"
+  "/usr/share/applications":
+    file: etc/config
+    mode: "0644"
+    user: "foo"
+    keep: true
+user: foo
