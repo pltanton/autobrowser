@@ -1,15 +1,20 @@
 name: "autobrowser"
 arch: "amd64"
 platform: "linux"
-version: "1.0.0"
-section: "default"
+version: ${VERSION}
+version_schema: "semver"
+epoch: 1
+
 maintainer: "Anton Plotnikov <plotnikovanton@gmail.com>"
 description: |
   Autobrowser: select brouser automatically depends on context
 vendor: "pltanton"
 license: "GPTv3"
+
 contents:
 - src: ./out/autobrowser
   dst: /usr/bin/autobrowser
 - src: ./linux/build/autobrowser.desktop
   dst: /usr/share/applications/autobrowser.desktop
+
+section: "default"

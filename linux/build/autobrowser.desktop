@@ -1,8 +1,8 @@
 [Desktop Entry]
 Categories=Network;WebBrowser
-Exec=/usr/bin/autobrowser -config ~/.config/autobrowser.config -url %u
+Exec=/usr/bin/autobrowser -url %u
 Icon=browser
 MimeType=x-scheme-handler/http;x-scheme-handler/https
-Name=Autobrowser: select browser by contextual rules
+Name=Autobrowser
 Terminal=false
 Type=Application

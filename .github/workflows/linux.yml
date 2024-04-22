@@ -25,11 +25,16 @@ jobs:
         name: autobrowser
         path: out/autobrowser 
 
+    - name: Git Version
+      id: version
+      uses: codacy/git-version@2.7.1
+
     - name: Install nFPM
       run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
     - name: Build packages
       run: |
+        export VERSION=${{ steps.version.outputs.version }}
         nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
         nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
 
@@ -44,3 +49,12 @@ jobs:
       with:
         name: autobrowser.deb
         path: out/*.deb 
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref == 'refs/heads/rpm_package'
+      with:
+        tag_name: "${{ steps.version.outputs.version }}"
+        files: |
+          out/*.dem
+          out/*.rpm
