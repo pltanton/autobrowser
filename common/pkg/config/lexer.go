@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"unicode"
 )
 
@@ -118,7 +118,7 @@ func (l *Lexer) readRune() rune {
 	if errors.Is(io.EOF, err) {
 		return rune(0)
 	} else if err != nil {
-		log.Println("Unexpected error occured while reading configuration: ", err)
+		slog.Warn("Unexpected error occured while reading configuration", "err", err)
 		return rune(0)
 	}
 	return r
