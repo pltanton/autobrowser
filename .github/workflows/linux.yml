@@ -18,8 +18,8 @@ jobs:
 
     - name: Build linux
       run: make build-linux
-
-    - name: Upload binary artifact
+        
+    - name: Upload binary artifacts
       uses: actions/upload-artifact@v4
       with:
         name: autobrowser
@@ -37,8 +37,9 @@ jobs:
         name: autobrowser
         path: out/autobrowser
 
+    - uses: actions/setup-go@v5
     - name: Install nFPM
-      run: wget -qO- https://github.com/goreleaser/nfpm/releases/download/v2.36.1/nfpm_2.36.1_Linux_x86_64.tar.gz | tar --directory ${{ github.action_path }} -xz nfpm
+      run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
     - name: Build packages
       run: |
