@@ -1,0 +1,89 @@
+name: Linux build
+
+on:
+  - push
+
+jobs:
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Git Version
+      id: version
+      uses: codacy/git-version@2.7.1
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'linux/go.mod'
+        cache-dependency-path: 'linux/go.sum'
+
+    - name: Build linux
+      run: make build-linux
+
+    - name: Install nFPM
+      run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+    - name: Build artifacts
+      run: |
+        export VERSION=${{ steps.version.outputs.version }}
+        nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
+        nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
+        mv out/autobrowser out/autobrowser-linux-bin
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-artifacts
+        path: |
+          out/*.deb 
+          out/*.rpm 
+          out/autobrowser-linux-bin
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'macos/go.mod'
+        cache-dependency-path: 'macos/go.sum'
+
+    - name: Build macos
+      run: make build-macos
+
+    - name: Build artifacts
+      run: cp out/Autobrowser.App/autobrowser out/autobrowser-mac-bin
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-artifacts
+        path: |
+          out/autobrowser-mac-bin
+    
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: [build-linux, build-mac]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Git Version
+      id: version
+      uses: codacy/git-version@2.7.1
+
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: out 
+        merge-multiple: true
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "${{ steps.version.outputs.version }}"
+        files: out/*

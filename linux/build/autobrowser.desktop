@@ -1,0 +1,8 @@
+[Desktop Entry]
+Categories=Network;WebBrowser
+Exec=/usr/bin/autobrowser -url %u
+Icon=browser
+MimeType=x-scheme-handler/http;x-scheme-handler/https
+Name=Autobrowser
+Terminal=false
+Type=Application
