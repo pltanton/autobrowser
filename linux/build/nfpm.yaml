@@ -1,7 +1,7 @@
 name: "autobrowser"
-arch: "amd64"
 platform: "linux"
 version: ${VERSION}
+arch: ${GOARCH}
 version_schema: "semver"
 epoch: 1
 

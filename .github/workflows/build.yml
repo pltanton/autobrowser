@@ -7,6 +7,10 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ['amd64', '386', 'arm64']
+
     steps:
     - uses: actions/checkout@v4
     - name: Git Version
@@ -20,26 +24,30 @@ jobs:
         cache-dependency-path: 'linux/go.sum'
 
     - name: Build linux
-      run: make build-linux
+      run: GOARCH=${{ matrix.arch }} go build -C linux -o ../out/autobrowser cmd/autobrowser/main.go
 
     - name: Install nFPM
       run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
     - name: Build artifacts
       run: |
+        export GOARCH=${{ matrix.arch }}
         export VERSION=${{ steps.version.outputs.version }}
+
         nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
         nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
-        mv out/autobrowser out/autobrowser-linux-bin
+        nfpm package -p apk --target out/ -f linux/build/nfpm.yaml
+        nfpm package -p archlinux --target out/ -f linux/build/nfpm.yaml
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: linux-artifacts
+        name: linux-artifacts-${{ matrix.arch }}
         path: |
           out/*.deb 
           out/*.rpm 
-          out/autobrowser-linux-bin
+          out/*.apk
+          out/*.zst
 
   build-mac:
     runs-on: macos-latest
