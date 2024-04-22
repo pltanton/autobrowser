@@ -52,10 +52,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: autobrowser.rpm
-        path: out/autobrowser.rpm 
+        path: out/*.rpm 
 
     - name: Upload deb artifact
       uses: actions/upload-artifact@v4
       with:
         name: autobrowser.deb
-        path: out/autobrowser.deb 
+        path: out/*.deb 
