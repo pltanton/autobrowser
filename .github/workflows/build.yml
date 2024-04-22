@@ -36,7 +36,10 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: linux-artifacts
-        path: out/* 
+        path: |
+          out/*.deb 
+          out/*.rpm 
+          out/autobrowser-linux-bin
 
   build-mac:
     runs-on: macos-latest
@@ -51,6 +54,16 @@ jobs:
 
     - name: Build macos
       run: make build-macos
+
+    - name: Build artifacts
+      run: cp out/Autobrowser.App/autobrowser out/autobrowser-mac-bin
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-artifacts
+        path: |
+          out/autobrowser-mac-bin
     
   release:
     if: github.ref == 'refs/heads/rpm_package'
@@ -73,6 +86,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: "${{ steps.version.outputs.version }}"
-        files: |
-          out/*.deb
-          out/*.rpm
+        files: out/*
