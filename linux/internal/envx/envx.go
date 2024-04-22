@@ -32,7 +32,7 @@ func init() {
 	dir, _ := os.UserHomeDir()
 	flag.StringVar(&flags.ConfigPath, "config", dir+"/.config/autobrowser.config", "configuration file path")
 	flag.StringVar(&flags.Url, "url", "", "url to open")
-	flag.StringVar(&flags.LogLevel, "log", "DEBUG", "log level: DEBUG, INFO, WARN, ERROR")
+	flag.StringVar(&flags.LogLevel, "log", "INFO", "log level: DEBUG, INFO, WARN, ERROR")
 
 	flag.BoolVar(&flags.HyprlandMode, "hyprland", false, "use hyprland for app matcher")
 	flag.BoolVar(&flags.GnomeMode, "gnome", false, "use gnome for app matcher")
@@ -67,6 +67,8 @@ func getAppMode(hyprlandFlag, gnomeFlag bool) AppMode {
 	switch {
 	case os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") != "":
 		return HYPRLAND
+	case os.Getenv("DESKTOP_SESSION") == "gnome":
+		return GNOME
 	}
 
 	return UNKNOWN

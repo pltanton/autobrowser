@@ -12,6 +12,6 @@ func (*fallbackMatcher) Match(args map[string]string) bool {
 
 var _ matchers.Matcher = &fallbackMatcher{}
 
-func New() (matchers.Matcher, error) {
-	return &fallbackMatcher{}, nil
+func New() matchers.Matcher {
+	return &fallbackMatcher{}
 }

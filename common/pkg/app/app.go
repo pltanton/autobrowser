@@ -15,7 +15,7 @@ import (
 func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegistry) {
 	configFile, err := os.Open(configPath)
 	if err != nil {
-		slog.Error("Failed to open cofig file: %s", err)
+		slog.Error("Failed to open cofig file", "err", err)
 		os.Exit(1)
 	}
 
@@ -41,6 +41,9 @@ func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegis
 			}
 
 			cmd := exec.Command(command[0], command[1:]...)
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+
 			if err := cmd.Run(); err != nil {
 				slog.Error("Failed to run command", "err", err)
 				os.Exit(1)

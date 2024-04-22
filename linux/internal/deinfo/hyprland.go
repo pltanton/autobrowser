@@ -2,6 +2,7 @@ package deinfo
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
 	ipc "github.com/labi-le/hyprland-ipc-client"
@@ -18,6 +19,7 @@ func newHyprlandProvider() deInfoProvider {
 }
 
 func (h *hyprlandProvider) fetchActiveApp() (App, error) {
+	slog.Debug("Fetch active app from gnome")
 
 	window, err := h.c.ActiveWindow()
 	if err != nil {

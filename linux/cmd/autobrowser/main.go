@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/pltanton/autobrowser/common/pkg/app"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
+	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/urlmatcher"
 	"github.com/pltanton/autobrowser/common/pkg/utils"
 	"github.com/pltanton/autobrowser/linux/internal/deinfo"
@@ -21,6 +22,7 @@ func main() {
 
 	registry.RegisterRule("url", urlmatcher.New(options.Url))
 	registry.RegisterRule("app", appmatcher.New(deInfoProvider))
+	registry.RegisterRule("fallback", fallback.New())
 
 	app.SetupAndRun(options.ConfigPath, options.Url, registry)
 }
