@@ -23,7 +23,7 @@ jobs:
       run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
     - name: Build rpm package
-      run: nfpm pkg --packer rpm --target out/ -f linux/build/nfpm.yaml
+      run: nfpm pkg -p rpm --target out/ -f linux/build/nfpm.yaml
 
     - name: Upload binary artifacts
       uses: actions/upload-artifact@v4
