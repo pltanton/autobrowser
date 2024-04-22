@@ -22,10 +22,40 @@ jobs:
     - name: Install nFPM
       run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
-    - name: Build rpm package
-      run: nfpm pkg -p rpm --target out/ -f linux/build/nfpm.yaml
-
     - name: Upload binary artifacts
       uses: actions/upload-artifact@v4
       with:
-        path: out/* 
+        name: autobrowser
+        path: out/autobrowser 
+
+  package:
+    needs: build 
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/download-artifact@master
+      with:
+        name: autobrowser
+        path: out/autobrowser
+
+    - uses: actions/setup-go@v5
+    - run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+    - name: Build packages
+      run: |
+        nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
+        nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
+
+    - name: Upload rpm artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: autobrowser.rpm
+        path: out/autobrowser.rpm 
+
+    - name: Upload deb artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: autobrowser.deb
+        path: out/autobrowser.deb 
