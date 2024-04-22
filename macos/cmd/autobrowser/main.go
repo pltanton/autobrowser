@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"log/slog"
 	"os"
 	"time"
@@ -10,9 +9,9 @@ import (
 	"github.com/pltanton/autobrowser/common/pkg/app"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
-	"github.com/pltanton/autobrowser/common/pkg/matchers/url"
+	"github.com/pltanton/autobrowser/common/pkg/matchers/urlmatcher"
 	"github.com/pltanton/autobrowser/macos/internal/macevents"
-	"github.com/pltanton/autobrowser/macos/internal/matchers/opener"
+	"github.com/pltanton/autobrowser/macos/internal/matchers/appmatcher"
 )
 
 func parseConfig() string {
@@ -36,21 +35,15 @@ func main() {
 
 	urlEvent, err := macevents.WaitForURL(4 * time.Second)
 	if err != nil {
-		slog.Error("Failed to receive url event: ", err)
+		slog.Error("Failed to receive url event", "err", err)
 		os.Exit(1)
 	}
 
 	registry := matchers.NewMatcherRegistry()
 
-	registry.RegisterLazyRule("url", func() (matchers.Matcher, error) {
-		return url.New(urlEvent.URL)
-	})
-
-	registry.RegisterLazyRule("app", func() (matchers.Matcher, error) {
-		return opener.New(urlEvent.PID)
-	})
-
-	registry.RegisterLazyRule("fallback", fallback.New)
+	registry.RegisterMatcher("url", urlmatcher.New(urlEvent.URL))
+	registry.RegisterMatcher("app", appmatcher.New(urlEvent.PID))
+	registry.RegisterMatcher("fallback", fallback.New())
 
 	app.SetupAndRun(cfg, urlEvent.URL, registry)
 }

@@ -20,7 +20,7 @@ func NewMatcherRegistry() *MatchersRegistry {
 	}
 }
 
-func (r *MatchersRegistry) RegisterRule(name string, matcher Matcher) {
+func (r *MatchersRegistry) RegisterMatcher(name string, matcher Matcher) {
 	r.matchers[name] = matcher
 }
 

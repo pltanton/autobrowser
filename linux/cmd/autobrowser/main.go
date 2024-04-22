@@ -20,9 +20,9 @@ func main() {
 	// Might be reused to fetch other stuff for other providers
 	deInfoProvider := deinfo.New(options.Mode)
 
-	registry.RegisterRule("url", urlmatcher.New(options.Url))
-	registry.RegisterRule("app", appmatcher.New(deInfoProvider))
-	registry.RegisterRule("fallback", fallback.New())
+	registry.RegisterMatcher("url", urlmatcher.New(options.Url))
+	registry.RegisterMatcher("app", appmatcher.New(deInfoProvider))
+	registry.RegisterMatcher("fallback", fallback.New())
 
 	app.SetupAndRun(options.ConfigPath, options.Url, registry)
 }

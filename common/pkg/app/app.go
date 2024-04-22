@@ -23,13 +23,13 @@ func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegis
 
 	for rule, err := parser.ParseRule(); !errors.Is(err, io.EOF); rule, err = parser.ParseRule() {
 		if err != nil {
-			slog.Info("Failed to parse rule", "err", err)
+			slog.Error("Failed to parse rule", "err", err)
 			os.Exit(1)
 		}
 
 		matches, err := registry.EvalRule(rule)
 		if err != nil {
-			slog.Info("Failed to evaluate rule", "err", err)
+			slog.Error("Failed to evaluate rule", "err", err)
 			os.Exit(1)
 		}
 
