@@ -15,6 +15,10 @@ buildGoModule {
 
   src = sources + "/linux";
 
+  preBuildPhase = ''
+    cd linux
+  '';
+
   meta = with lib; {
     homepage = "https://github.com/pltanton/autobrowser";
     description = "Automatically determine browser depending on provided rules";
