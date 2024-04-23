@@ -84,7 +84,7 @@ jobs:
       with:
         name: mac-artifacts
         path: |
-          out/autobrowser-mac-bin
+          out/Autobrowser-Installer.dmg
     
   release:
     if: github.ref == 'refs/heads/master'
