@@ -63,8 +63,21 @@ jobs:
     - name: Build macos
       run: make build-macos
 
+    - name: Install create-dmg
+      run: git clone https://github.com/create-dmg/create-dmg.git
+
     - name: Build artifacts
-      run: cp out/Autobrowser.App/autobrowser out/autobrowser-mac-bin
+      run: >
+        ./create-dmg/create-dmg
+        --volname "Autobrowser Installer"
+        --window-pos 200 120
+        --window-size 800 400
+        --icon-size 100
+        --icon "Autobrowser.app" 200 190
+        --hide-extension "Autobrowser.app"
+        --app-drop-link 600 190
+        "out/Autobrowser-Installer.dmg"
+        "out/"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
