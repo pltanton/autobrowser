@@ -1,7 +1,10 @@
 // Package config contains parser to parse configuration rules according to following formal grammar
 //
-// RULE -> BROWSER_DEF COLON MATCHER_DEF [SEMICOLON RULE_DEF]*
-// BROWSER_DEF -> VALUE [SPACE VALUE]*
+// RULE -> WORDS COLON MATCHER_PROPERTY EQ
+// ASSIGNMENT -> WORD ASSIGN WORDS
+//
+// WORDS -> WORD [WORD]*
+// BROWSER_DEF -> VALUE [VALUE]*
 // MATCHER_DEF -> MATCHER_PROPERTY EQ VALUE
 // MATCHER_PROPERTY -> VALUE DOT VALUE
 //
@@ -32,25 +35,74 @@ func NewParser(in io.Reader) *Parser {
 	}
 }
 
-// Parse rule parses single rule
+// ParseInstruction parse single configuration instruction
+// it might be neither an assignment or a rule
 //
-// RULE -> RULE_NAME COLON MATCHER_PROPERTY EQ
+// RULE -> WORDS COLON MATCHER_PROPERTY EQ
 //
-// Returns EOF error if sequence is over
-func (p *Parser) ParseRule() (Rule, error) {
+// ASSIGNMENT -> WORD ASSIGN WORDS
+// WORDS -> WORD [WORD]*
+func (p *Parser) ParseInstruction() (Instruction, error) {
 	p.skipEndls()
-
 	tok := p.scanSkipSpace()
 	if tok.Type == EOF {
-		return Rule{}, fmt.Errorf("EOF token reached: %w", io.EOF)
+		return Instruction{}, fmt.Errorf("EOF token reached: %w", io.EOF)
 	}
-
 	p.unscan()
-	browserDef, err := p.parseBrowserCommand()
+
+	lValue, err := p.parseWordSequence()
 	if err != nil {
-		return Rule{}, err
+		return Instruction{}, err
 	}
 
+	if len(lValue) == 0 {
+		return Instruction{}, fmt.Errorf("expected lValue, but got empty string")
+	}
+
+	// It might be an assignment potentially
+	if len(lValue) == 1 {
+		tok = p.scanSkipSpace()
+		if tok.Type == ASSIGN {
+			assignment, err := p.parseRestOfAssignment(lValue[0])
+			if err != nil {
+				return Instruction{}, err
+			}
+			return FromAssignment(assignment), nil
+		}
+		p.unscan()
+	}
+
+	if tok = p.scanSkipSpace(); tok.Type != COLON {
+		return Instruction{}, fmt.Errorf("expected COLON, but got %v", tok)
+	}
+
+	rule, err := p.parseRestOfRule(lValue)
+	if err != nil {
+		return Instruction{}, err
+	}
+
+	return FromRule(rule), nil
+
+}
+
+func (p *Parser) parseRestOfAssignment(name string) (Assignment, error) {
+	command, err := p.parseWordSequence()
+	if err != nil {
+		return Assignment{}, fmt.Errorf("expected command, but got err: %w", err)
+	}
+
+	if tok := p.scanSkipSpace(); tok.Type != ENDL && tok.Type != EOF {
+		return Assignment{}, fmt.Errorf("assignment should end with ENDL or EOF, but got %v", tok)
+	}
+
+	return Assignment{
+		Key:   name,
+		Value: command,
+	}, nil
+}
+
+func (p *Parser) parseRestOfRule(lValue []string) (Rule, error) {
+	var tok Token
 	matchers := make(map[string]MatcherProps)
 
 	for {
@@ -76,21 +128,18 @@ func (p *Parser) ParseRule() (Rule, error) {
 	}
 
 	return Rule{
-		Command:  browserDef,
+		Command:  lValue,
 		Matchers: matchers,
 	}, nil
 }
 
-func (p *Parser) parseBrowserCommand() ([]string, error) {
+func (p *Parser) parseWordSequence() ([]string, error) {
 	result := []string{}
 
-	for tok := p.scanSkipSpace(); tok.Type != COLON; tok = p.scanSkipSpace() {
-		if tok.Type != VALUE {
-			return nil, fmt.Errorf("expected VALUE or COLON, but got %v", tok)
-		}
-
+	for tok := p.scanSkipSpace(); tok.Type == WORD; tok = p.scanSkipSpace() {
 		result = append(result, tok.Value)
 	}
+	p.unscan()
 
 	return result, nil
 }
@@ -102,9 +151,9 @@ func (p *Parser) parseBrowserCommand() ([]string, error) {
 //
 // Returns matcher type, property name, property value
 func (p *Parser) parseMatcherDef() (string, string, string, error) {
-	tok := p.scan()
+	tok := p.scanSkipSpace()
 
-	if tok.Type != VALUE {
+	if tok.Type != WORD {
 		return "", "", "", fmt.Errorf("unexpected token for matcher type, expected VALUE, but got: %v", tok)
 	}
 	matcherType := tok.Value
@@ -122,7 +171,7 @@ func (p *Parser) parseMatcherDef() (string, string, string, error) {
 	}
 
 	tok = p.scan()
-	if tok.Type != VALUE {
+	if tok.Type != WORD {
 		return "", "", "", fmt.Errorf("unexpected token for matcher property name, expected VALUE, but got: %v", tok)
 	}
 	matcherProp := tok.Value
@@ -133,7 +182,7 @@ func (p *Parser) parseMatcherDef() (string, string, string, error) {
 	}
 
 	tok = p.scan()
-	if tok.Type != VALUE {
+	if tok.Type != WORD {
 		return "", "", "", fmt.Errorf("unexpected token for matcher property value, expected VALUE, but got: %v", tok)
 	}
 	matcherPropValue := tok.Value

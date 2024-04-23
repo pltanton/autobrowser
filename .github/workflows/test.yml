@@ -1,0 +1,29 @@
+name: Build and release
+
+on: [push]
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: cachix/install-nix-action@v25
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - run: nix build
+    - run: nix flake check
+ 
+  test-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'macos/go.mod'
+        cache-dependency-path: 'macos/go.sum'
+
+    - name: Build macos
+      run: make build-macos

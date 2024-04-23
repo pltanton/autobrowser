@@ -2,12 +2,22 @@
 with lib;
 let
   cfg = config.programs.autobrowser;
-  configFile = pkgs.writeText "autobrowser.config" (builtins.concatStringsSep "\n" (cfg.rules ++ [ "${cfg.default}:fallback" ]));
+  configFile = pkgs.writeText "autobrowser.config"
+    (builtins.concatStringsSep "\n" (
+      (lib.mapAttrsToList (k: v: "${k}:=${v}") cfg.variables) ++
+      cfg.rules ++
+      [ "${cfg.default}:fallback" ]
+    ));
 in
 {
   options.programs.autobrowser = {
     enable = lib.mkEnableOption "whenever to enable autobrowser as default browser";
     package = mkPackageOption pkgs "autobrowser" { };
+    variables = mkOption {
+      type = with lib.types; attrsOf str;
+      description = "Attribute set of variables";
+      default = { };
+    };
     rules = mkOption {
       type = with lib.types; listOf str;
       example = [ "firefox {}:app.class=telegram" "firefox -p work {}:url.regex='.*atlassian.org.*'" ];

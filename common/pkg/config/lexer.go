@@ -19,11 +19,12 @@ const (
 	EOF
 
 	EQ
+	ASSIGN
 	DOT
 	COMMA
 	COLON
 	SEMICOLON
-	VALUE
+	WORD
 	SPACE
 	COMMENT
 	ENDL
@@ -37,6 +38,8 @@ func (t TokenType) String() string {
 		return "EOF"
 	case EQ:
 		return "EQ"
+	case ASSIGN:
+		return "ASSIGN"
 	case DOT:
 		return "DOT"
 	case COMMA:
@@ -45,8 +48,8 @@ func (t TokenType) String() string {
 		return "COLON"
 	case SEMICOLON:
 		return "SEMICOLON"
-	case VALUE:
-		return "VALUE"
+	case WORD:
+		return "WORD"
 	case SPACE:
 		return "SPACE"
 	case ENDL:
@@ -96,12 +99,17 @@ func (l *Lexer) Next() Token {
 	case '#':
 		l.unreadRune()
 		return l.scanComment()
+	case ':':
+		if l.readRune() == '=' {
+			return Token{ASSIGN, ":="}
+		} else {
+			l.unreadRune()
+			return Token{COLON, string(r)}
+		}
 	case '=':
 		return Token{EQ, string(r)}
 	case '.':
 		return Token{DOT, string(r)}
-	case ':':
-		return Token{COLON, string(r)}
 	case ';':
 		return Token{SEMICOLON, string(r)}
 	case ',':
@@ -161,7 +169,7 @@ func (l *Lexer) scanWhitespaces() Token {
 }
 
 func (l *Lexer) scanValue() Token {
-	return l.scanCharclassSequence(VALUE, ValueClass)
+	return l.scanCharclassSequence(WORD, ValueClass)
 }
 
 func (l *Lexer) scanEscapedValue() Token {
@@ -182,7 +190,7 @@ func (l *Lexer) scanEscapedValue() Token {
 	}
 
 	return Token{
-		Type:  VALUE,
+		Type:  WORD,
 		Value: buf.String(),
 	}
 }

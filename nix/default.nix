@@ -1,29 +1,26 @@
 { lib, stdenv, buildGoModule, makeWrapper, ddcutil }:
-buildGoModule {
-  pname = "autobrowser";
-  version = "0";
-
-  vendorHash = "sha256-y8Q4P4k3KyMHkbTU/usD82XIOw4hO0Uj8AbCClsZgwc=";
-
-  src = lib.cleanSourceWith {
+let
+  sources = lib.cleanSourceWith {
     filter = name: type:
       let baseName = baseNameOf (toString name);
       in !(lib.hasSuffix ".nix" baseName);
     src = lib.cleanSource ../.;
   };
+in
+buildGoModule {
+  pname = "autobrowser";
+  version = "0";
 
-  allowGoReference = true;
+  vendorHash = "sha256-4vLAS5eQyvE5bsQ35q0PYdu1zUxYT34Y0gC/6nSfPI8=";
 
-  nativeBuildInputs = [ makeWrapper ];
+  src = sources;
 
-  postFixup = ''
-    mv $out/bin/autobrowser-linux $out/bin/autobrowser
-  '';
+  modRoot = "linux";
 
   meta = with lib; {
     homepage = "https://github.com/pltanton/autobrowser";
     description = "Automatically determine browser depending on provided rules";
-    license = licenses.bsd3;
+    license = licenses.gpl3Only;
     platforms = platforms.linux;
     mainProgram = "autobrowser";
   };

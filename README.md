@@ -15,8 +15,10 @@ Automatically choosing web-browser depends on environment context rules.
 ## Example
 
 ```
-firefox -p job {}:url.regex='.*jira.*';app.class=Slack # Open all jira links from slack with job firefox profile
-firefox 'ext+container:name=Isolated&url={}':app.class=org.telegram.desktop # Open all links from the telegram app using Isolated firefox container
+work:=firefox -p job {}:url.regex='.*jira.*'
+
+work;app.class=Slack # Open all jira links from slack with job firefox profile
+work:app.class=org.telegram.desktop # Open all links from the telegram app using Isolated firefox container
 
 # Default fallback
 firefox {}:fallback
@@ -35,6 +37,8 @@ The application just evaluates configuration rules 1 by 1 and applies url to a f
 Browser command is a sequence of words, divided by spaces. The first word is an executable name and the others are arguments. `{}` char sequence will be replaced with a clicked URL.
 
 You can escape spaces or other _non-word characters_ can be escaped by a single-quote string.
+
+To avoid repeating of same browser command you can user assignment syntax `command_name:=your command {}` for further use.
 
 ## Matchers
 
@@ -79,6 +83,10 @@ Properties:
 Due to stupidity of Gonme shell interface there is no legal way to recieve focused winow for Gnome with wayland: https://www.reddit.com/r/gnome/comments/pneza1/gdbus_call_for_moving_windows_not_working_in/
 
 To be able to use the `app` matcher, please [install the extenions](https://extensions.gnome.org/extension/5592/focused-window-d-bus/), that exposes currently focused window via dbus interface: https://github.com/flexagoon/focused-window-dbus 
+
+### Prebuilt packages
+
+You can find `.rpm`, `.deb`, `.apk` and `.zst` packages on the release page.
 
 ### Linux manual
 
