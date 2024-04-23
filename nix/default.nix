@@ -9,15 +9,13 @@ let
 in
 buildGoModule {
   pname = "autobrowser";
-  version = "0.1";
+  version = "0";
 
   vendorHash = "sha256-4vLAS5eQyvE5bsQ35q0PYdu1zUxYT34Y0gC/6nSfPI8=";
 
-  src = sources + "/linux";
+  src = sources;
 
-  preBuildPhase = ''
-    cd linux
-  '';
+  modRoot = "linux";
 
   meta = with lib; {
     homepage = "https://github.com/pltanton/autobrowser";
