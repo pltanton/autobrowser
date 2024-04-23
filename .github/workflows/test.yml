@@ -1,0 +1,45 @@
+name: Build and release
+
+on: [push]
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: ['amd64', '386', 'arm64']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'linux/go.mod'
+        cache-dependency-path: 'linux/go.sum'
+
+    - name: Build linux
+      run: make build-linux
+
+    - name: Test linux
+      run: go test -C linux ./... 
+
+    - name: Test common
+      run: go test -C common ./... 
+  
+  test-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: 'macos/go.mod'
+        cache-dependency-path: 'macos/go.sum'
+
+    - name: Build macos
+      run: make build-macos
+
+    - name: Test macos
+      run: go test -C macos ./... 

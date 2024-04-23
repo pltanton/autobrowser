@@ -15,3 +15,32 @@ type Rule struct {
 	// Command browser command
 	Command []string
 }
+
+// Assignment is variable definition for config
+type Assignment struct {
+	Key   string
+	Value []string
+}
+
+// Insturtion is isngle line in config
+type Instruction struct {
+	instruction any
+}
+
+func FromRule(r Rule) Instruction {
+	return Instruction{r}
+}
+
+func FromAssignment(a Assignment) Instruction {
+	return Instruction{a}
+}
+
+func (i Instruction) Rule() (Rule, bool) {
+	rule, ok := i.instruction.(Rule)
+	return rule, ok
+}
+
+func (i Instruction) Assignment() (Assignment, bool) {
+	assignment, ok := i.instruction.(Assignment)
+	return assignment, ok
+}

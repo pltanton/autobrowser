@@ -24,14 +24,14 @@ func TestLexer_Next(t *testing.T) {
 			want:  Token{DOT, "."},
 		},
 		{
-			name:  "Lex value",
-			inStr: "here_is-va1ue",
-			want:  Token{VALUE, "here_is-va1ue"},
+			name:  "Lex word",
+			inStr: "here_is-va1ue{}",
+			want:  Token{WORD, "here_is-va1ue{}"},
 		},
 		{
 			name:  "Lex escaped value",
 			inStr: "'here.is,escaped=value\t*** () ?? {} <> 💀'",
-			want:  Token{VALUE, "here.is,escaped=value\t*** () ?? {} <> 💀"},
+			want:  Token{WORD, "here.is,escaped=value\t*** () ?? {} <> 💀"},
 		},
 		{
 			name:  "Lex comma",
@@ -63,11 +63,15 @@ func TestLexer_Next(t *testing.T) {
 			inStr: "\n",
 			want:  Token{ENDL, "\n"},
 		},
-
 		{
 			name:  "Lex comment",
 			inStr: "# Hello.={} ;:",
 			want:  Token{COMMENT, "# Hello.={} ;:"},
+		},
+		{
+			name:  "Lex assign",
+			inStr: ":=",
+			want:  Token{ASSIGN, ":="},
 		},
 	}
 	for _, tt := range tests {
@@ -85,37 +89,45 @@ func TestLexer_Next(t *testing.T) {
 
 func TestLexer_FullSequence(t *testing.T) {
 	input := `
+foo:=bar biz
 firefox:url.regex='.*foo.*';app.class=telegram # Commentary with row description
 'firefox -p work':url.host='github.com'`
 
 	expected := []Token{
 		{ENDL, "\n"},
 
-		{VALUE, "firefox"},
+		{WORD, "foo"},
+		{ASSIGN, ":="},
+		{WORD, "bar"},
+		{SPACE, " "},
+		{WORD, "biz"},
+		{ENDL, "\n"},
+
+		{WORD, "firefox"},
 		{COLON, ":"},
-		{VALUE, "url"},
+		{WORD, "url"},
 		{DOT, "."},
-		{VALUE, "regex"},
+		{WORD, "regex"},
 		{EQ, "="},
-		{VALUE, ".*foo.*"},
+		{WORD, ".*foo.*"},
 		{SEMICOLON, ";"},
-		{VALUE, "app"},
+		{WORD, "app"},
 		{DOT, "."},
-		{VALUE, "class"},
+		{WORD, "class"},
 		{EQ, "="},
-		{VALUE, "telegram"},
+		{WORD, "telegram"},
 
 		{SPACE, " "},
 		{COMMENT, "# Commentary with row description"},
 		{ENDL, "\n"},
 
-		{VALUE, "firefox -p work"},
+		{WORD, "firefox -p work"},
 		{COLON, ":"},
-		{VALUE, "url"},
+		{WORD, "url"},
 		{DOT, "."},
-		{VALUE, "host"},
+		{WORD, "host"},
 		{EQ, "="},
-		{VALUE, "github.com"},
+		{WORD, "github.com"},
 	}
 
 	l := &Lexer{
