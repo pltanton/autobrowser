@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-cd "${0%/*}"
-./autobrowser-bin --config ~/.config/autobrowser.config

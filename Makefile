@@ -1,6 +1,6 @@
 .PHONY: clean
 clean:
-	rm -rf build
+	rm -rf out
 
 .PHONY: build-linux
 build-linux:
@@ -8,9 +8,9 @@ build-linux:
 
 .PHONY: build-macos
 build-macos: clean
-	mkdir -p "build/Autobrowser.app"
-	cp macos/assets/* build/Autobrowser.app
-	go build -C macos -o ../out/Autobrowser.App/autobrowser cmd/autobrowser/main.go 
+	mkdir -p "out/Autobrowser.app"
+	cp macos/assets/* out/Autobrowser.app
+	go build -C macos -o ../out/Autobrowser.app/autobrowser cmd/autobrowser/main.go
 
 .PHONY: install-macos
 install-macos: build-macos
