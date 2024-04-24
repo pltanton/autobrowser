@@ -3,115 +3,114 @@ name: Build and release
 on:
   workflow_run:
     workflows: ["Test"]
-    branches: [main]
-    types: 
+    branches: [master]
+    types:
       - completed
 
 jobs:
-
   build-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: ['amd64', '386', 'arm64']
+        arch: ["amd64", "386", "arm64"]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Git Version
-      id: version
-      uses: codacy/git-version@2.7.1
+      - uses: actions/checkout@v4
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.7.1
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: 'linux/go.mod'
-        cache-dependency-path: 'linux/go.sum'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "linux/go.mod"
+          cache-dependency-path: "linux/go.sum"
 
-    - name: Build linux
-      run: GOARCH=${{ matrix.arch }} go build -C linux -o ../out/autobrowser cmd/autobrowser/main.go
+      - name: Build linux
+        run: GOARCH=${{ matrix.arch }} go build -C linux -o ../out/autobrowser cmd/autobrowser/main.go
 
-    - name: Install nFPM
-      run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+      - name: Install nFPM
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
-    - name: Build artifacts
-      run: |
-        export GOARCH=${{ matrix.arch }}
-        export VERSION=${{ steps.version.outputs.version }}
+      - name: Build artifacts
+        run: |
+          export GOARCH=${{ matrix.arch }}
+          export VERSION=${{ steps.version.outputs.version }}
 
-        nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
-        nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
-        nfpm package -p apk --target out/ -f linux/build/nfpm.yaml
-        nfpm package -p archlinux --target out/ -f linux/build/nfpm.yaml
+          nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
+          nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
+          nfpm package -p apk --target out/ -f linux/build/nfpm.yaml
+          nfpm package -p archlinux --target out/ -f linux/build/nfpm.yaml
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: linux-artifacts-${{ matrix.arch }}
-        path: |
-          out/*.deb 
-          out/*.rpm 
-          out/*.apk
-          out/*.zst
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts-${{ matrix.arch }}
+          path: |
+            out/*.deb 
+            out/*.rpm 
+            out/*.apk
+            out/*.zst
 
   build-mac:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: 'macos/go.mod'
-        cache-dependency-path: 'macos/go.sum'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "macos/go.mod"
+          cache-dependency-path: "macos/go.sum"
 
-    - name: Build macos
-      run: make build-macos
+      - name: Build macos
+        run: make build-macos
 
-    - name: Install create-dmg
-      run: git clone https://github.com/create-dmg/create-dmg.git
+      - name: Install create-dmg
+        run: git clone https://github.com/create-dmg/create-dmg.git
 
-    - name: Build artifacts
-      run: >
-        ./create-dmg/create-dmg
-        --volname "Autobrowser Installer"
-        --window-pos 200 120
-        --window-size 800 400
-        --icon-size 100
-        --icon "Autobrowser.app" 200 190
-        --hide-extension "Autobrowser.app"
-        --app-drop-link 600 190
-        "out/Autobrowser-Installer.dmg"
-        "out/"
+      - name: Build artifacts
+        run: >
+          ./create-dmg/create-dmg
+          --volname "Autobrowser Installer"
+          --window-pos 200 120
+          --window-size 800 400
+          --icon-size 100
+          --icon "Autobrowser.app" 200 190
+          --hide-extension "Autobrowser.app"
+          --app-drop-link 600 190
+          "out/Autobrowser-Installer.dmg"
+          "out/"
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: mac-artifacts
-        path: |
-          out/Autobrowser-Installer.dmg
-    
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-artifacts
+          path: |
+            out/Autobrowser-Installer.dmg
+
   release:
     needs: [build-linux, build-mac]
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}   # checkout the correct branch name
-        fetch-depth: 0  
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }} # checkout the correct branch name
+          fetch-depth: 0
 
-    - name: Git Version
-      id: version
-      uses: codacy/git-version@2.7.1
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.7.1
 
-    - name: Download All Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: out 
-        merge-multiple: true
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: "${{ steps.version.outputs.version }}"
-        files: out/*
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.version.outputs.version }}"
+          files: out/*
