@@ -11,31 +11,19 @@
           pkgs = import nixpkgs { inherit system; };
         in
         {
-          packages.default = pkgs.callPackage ./nix/default.nix { };
+          packages.autobrowser = pkgs.callPackage ./nix/linux.nix { };
+          packages.default = pkgs.callPackage ./nix/linux.nix { };
 
-          devShells.default = with pkgs; mkShell {
-            buildInputs = [ 
-              go 
-              clang 
-              gnustep.make 
-              gnustep.base 
-              gnustep.gui 
-              gnustep.libobjc 
-              gnustep.stdenv
-              gnustep.gworkspace
-            ];
-            CC = "clang";
-            shellHook = ''
-              export CC="clang"
-              export CGO="-fobjc-nonfragile-abi"
-            '';
+          checks.autobrowser-common = pkgs.callPackage ./nix/common.nix { };
+
+          devShells. default = with pkgs; mkShell {
+            buildInputs = [ go ];
           };
         }) //
     {
       overlays.default = final: prev: rec {
-        autobrowser = final.pkgs.callPackage ./nix/default.nix { };
+        autobrowser = final.pkgs.callPackage ./nix/linux.nix { };
       };
-
 
       homeManagerModules.default = import ./nix/hm-module.nix;
     };

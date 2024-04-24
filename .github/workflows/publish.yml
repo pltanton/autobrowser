@@ -1,7 +1,11 @@
 name: Build and release
 
 on:
-  - push
+  workflow_run:
+    workflows: ["Test"]
+    branches: [main]
+    types: 
+      - completed
 
 jobs:
 
@@ -87,7 +91,6 @@ jobs:
           out/Autobrowser-Installer.dmg
     
   release:
-    if: github.ref == 'refs/heads/master'
     needs: [build-linux, build-mac]
     runs-on: ubuntu-latest
 
