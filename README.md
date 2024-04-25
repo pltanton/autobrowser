@@ -50,7 +50,7 @@ This matcher always succeeds. Use it at the end of a configuration to specify th
 
 Matches by source application.
 
-Currently supported desktop environments: _hyprland_, _gnome_ (TODO), _macos_.
+Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_.
 
 Hyprland Properties:
 
