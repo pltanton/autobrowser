@@ -25,6 +25,7 @@ func init() {
 
 		HyprlandMode bool
 		GnomeMode    bool
+		SwayMode     bool
 
 		LogLevel string
 	}{}
@@ -34,15 +35,16 @@ func init() {
 	flag.StringVar(&flags.Url, "url", "", "url to open")
 	flag.StringVar(&flags.LogLevel, "log", "INFO", "log level: DEBUG, INFO, WARN, ERROR")
 
-	flag.BoolVar(&flags.HyprlandMode, "hyprland", false, "use hyprland for app matcher")
-	flag.BoolVar(&flags.GnomeMode, "gnome", false, "use gnome for app matcher")
+	flag.BoolVar(&flags.HyprlandMode, "hyprland", false, "use hyprland IPC for app matcher")
+	flag.BoolVar(&flags.GnomeMode, "gnome", false, "use gnome DBUS protocol for app matcher")
+	flag.BoolVar(&flags.SwayMode, "sway", false, "use sway IPC for app matcher")
 
 	flag.Parse()
 
 	options = Options{
 		ConfigPath: flags.ConfigPath,
 		Url:        flags.Url,
-		Mode:       getAppMode(flags.HyprlandMode, flags.GnomeMode),
+		Mode:       getAppMode(flags.HyprlandMode, flags.GnomeMode, flags.SwayMode),
 		LogLevel:   flags.LogLevel,
 	}
 }
@@ -53,18 +55,23 @@ const (
 	UNKNOWN AppMode = iota
 	HYPRLAND
 	GNOME
+	SWAY
 )
 
-func getAppMode(hyprlandFlag, gnomeFlag bool) AppMode {
+func getAppMode(hyprlandFlag, gnomeFlag, swayFlag bool) AppMode {
 	switch {
 	case hyprlandFlag:
 		return HYPRLAND
 	case gnomeFlag:
 		return GNOME
+	case swayFlag:
+		return SWAY
 	}
 
 	// Try to determine it then
 	switch {
+	case os.Getenv("SWAYSOCK") != "":
+		return SWAY
 	case os.Getenv("HYPRLAND_INSTANCE_SIGNATURE") != "":
 		return HYPRLAND
 	case os.Getenv("DESKTOP_SESSION") == "gnome":

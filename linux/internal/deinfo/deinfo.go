@@ -36,6 +36,8 @@ func New(appMode envx.AppMode) *DeInfoProvider {
 	switch appMode {
 	case envx.HYPRLAND:
 		provider = newHyprlandProvider()
+	case envx.SWAY:
+		provider = newSwayProvider()
 	case envx.GNOME:
 		provider = newGnomeProvider()
 	case envx.UNKNOWN:
