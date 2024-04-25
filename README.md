@@ -17,7 +17,7 @@ Automatically choosing web-browser depends on environment context rules.
 ```
 work:=firefox -p job {}:url.regex='.*jira.*'
 
-work;app.class=Slack # Open all jira links from slack with job firefox profile
+work:app.class=Slack # Open all jira links from slack with job firefox profile
 work:app.class=org.telegram.desktop # Open all links from the telegram app using Isolated firefox container
 
 # Default fallback
