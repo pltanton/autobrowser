@@ -90,8 +90,10 @@ You can find `.rpm`, `.deb`, `.apk` and `.zst` packages on the release page.
 
 ### Linux manual
 
+Clone the repository and run, you can find a result binary in the `out` directory.
+
 ```sh
-go install github.com/pltanton/autobrowser/linux/cmd/autobrowser@latest
+make build-linux
 ```
 
 Create config at `~/.config/autobrowser.config`.
