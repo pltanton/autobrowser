@@ -19,7 +19,7 @@ func newHyprlandProvider() deInfoProvider {
 }
 
 func (h *hyprlandProvider) fetchActiveApp() (App, error) {
-	slog.Debug("Fetch active app from gnome")
+	slog.Debug("Fetch active app from hyprland")
 
 	window, err := h.c.ActiveWindow()
 	if err != nil {
