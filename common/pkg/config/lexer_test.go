@@ -59,6 +59,11 @@ func TestLexer_Next(t *testing.T) {
 			want:  Token{SEMICOLON, ";"},
 		},
 		{
+			name:  "Lex windows newline",
+			inStr: "\r\n",
+			want:  Token{ENDL, "\r\n"},
+		},
+		{
 			name:  "Lex endline",
 			inStr: "\n",
 			want:  Token{ENDL, "\n"},

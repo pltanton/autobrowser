@@ -114,6 +114,13 @@ func (l *Lexer) Next() Token {
 		return Token{SEMICOLON, string(r)}
 	case ',':
 		return Token{COMMA, string(r)}
+	case '\r':
+		if l.readRune() == '\n' { // newline is \r\n on Windows
+			return Token{ENDL, "\r\n"}
+		} else {
+			l.unreadRune()
+			return Token{ILLEGAL, string(r)}
+		}
 	case '\n':
 		return Token{ENDL, string(r)}
 	}
