@@ -1,4 +1,7 @@
-{ lib, buildGoModule }:
+{
+  lib,
+  buildGoModule,
+}:
 buildGoModule {
   pname = "autobrowser";
   version = "0";
@@ -11,7 +14,7 @@ buildGoModule {
     platforms = platforms.linux;
     mainProgram = "autobrowser";
   };
-  src = import ../src.nix { inherit lib; };
+  src = import ../src.nix {inherit lib;};
 
   modRoot = "linux";
 }
