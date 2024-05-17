@@ -12,9 +12,9 @@ vendor: "pltanton"
 license: "GPTv3"
 
 contents:
-- src: ./out/autobrowser
-  dst: /usr/bin/autobrowser
-- src: ./linux/build/autobrowser.desktop
-  dst: /usr/share/applications/autobrowser.desktop
+  - src: ./out/autobrowser
+    dst: /usr/bin/autobrowser
+  - src: ./linux/build/autobrowser.desktop
+    dst: /usr/share/applications/autobrowser.desktop
 
 section: "default"

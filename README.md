@@ -7,7 +7,6 @@ Automatically choosing web-browser depends on environment context rules.
 - suckless solution with no redundant dependencies
 - fast single binary
 - simple rule engine with custom interpretable DSL
-- extendable (TODO)
 - cross-platform
 
 # Configuration
@@ -28,7 +27,7 @@ Other examples can be found in `examples` folder
 
 ## Configuration syntax
 
-The application just evaluates configuration rules 1 by 1 and applies url to a first matched command. Syntax can be described as: 
+The application just evaluates configuration rules 1 by 1 and applies url to a first matched command. Syntax can be described as:
 
 ```
 <browser_command>:<matcher_knd>.<prop_name>=<prop_value>[;<matcher_knd>.<prop_name>=<prop_value>]
@@ -44,7 +43,7 @@ To avoid repeating of same browser command you can user assignment syntax `comma
 
 ### fallback
 
-This matcher always succeeds. Use it at the end of a configuration to specify the default browser. 
+This matcher always succeeds. Use it at the end of a configuration to specify the default browser.
 
 ### app
 
@@ -52,17 +51,17 @@ Matches by source application.
 
 Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_.
 
-Hyprland Properties:
+Hyprland/Sway/Gnome Properties:
 
-- *title*: match by source window title with regex
-- *class*: match by window class
+- _title_: match by source window title with regex
+- _class_: match by window class
 
 MacOS Properties:
 
-- *display_name* - match by app display name (ex: `Slack`)
-- *bundle_id* - match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
-- *bundle_path* - match by App Bundle path (ex: `/Applications/Slack.app`)
-- *executable_path* - match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
+- _display_name_ - match by app display name (ex: `Slack`)
+- _bundle_id_ - match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
+- _bundle_path_ - match by App Bundle path (ex: `/Applications/Slack.app`)
+- _executable_path_ - match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
 
 ### url
 
@@ -70,9 +69,9 @@ Match by a clicked URL.
 
 Properties:
 
-- *host*: match URL by host
-- *scheme*: match URL by scheme
-- *regex*: match full URL by regex
+- _host_: match URL by host
+- _scheme_: match URL by scheme
+- _regex_: match full URL by regex
 
 # Setup
 
@@ -82,7 +81,7 @@ Properties:
 
 Due to stupidity of Gonme shell interface there is no legal way to recieve focused winow for Gnome with wayland: https://www.reddit.com/r/gnome/comments/pneza1/gdbus_call_for_moving_windows_not_working_in/
 
-To be able to use the `app` matcher, please [install the extenions](https://extensions.gnome.org/extension/5592/focused-window-d-bus/), that exposes currently focused window via dbus interface: https://github.com/flexagoon/focused-window-dbus 
+To be able to use the `app` matcher, please [install the extenions](https://extensions.gnome.org/extension/5592/focused-window-d-bus/), that exposes currently focused window via dbus interface: https://github.com/flexagoon/focused-window-dbus
 
 ### Prebuilt packages
 
@@ -97,7 +96,7 @@ make build-linux
 ```
 
 Create config at `~/.config/autobrowser.config`.
-Then add the following .desktop file to `~/.local/share/applications/` and set it as the default browser. 
+Then add the following .desktop file to `~/.local/share/applications/` and set it as the default browser.
 Change paths for your setup if needed.
 
 ```ini
@@ -111,44 +110,34 @@ Terminal=false
 Type=Application
 ```
 
-### Nixos flakes with Home manager
+### Nix flakes
 
-In your `flake.nix`:
+Actual flakes provides overlay (`overlays.default`) and module for home-manager (`autobrowser.homeModules.default`).
+
+Example of home-manager module configuration:
 
 ```nix
 {
-  autobrowser.url = "github:pltanton/autobrowser";
-  autobrowser.inputs.nixpkgs.follows = "nixpkgs";
-
-  outputs = { self, nixpkgs, home-manager, ddcsync }: {
-    modules = [
-      ({ pkgs, ... }: {
-        nixpkgs.overlays = [ autobrowser.overlays.default ]; # To use programm as package
-      })
-    ];
-
-    # To use with home-manager
-    homeConfigurations."USER@HOSTNAME"= home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      modules = [
-        autobrowser.homeManagerModules.default
-        { 
-            programs.autobrowser = {
-                enable = true; 
-                rules = [
-                    "firefox 'ext+container:name=Work&url={}':app.class=Slack"
-                ];
-                default = "firefox {}";
-            };
-        }
-        # ...
-      ];
+  inputs,
+  ...
+}: {
+  programs.autobrowser = {
+    package = inputs.autobrowser.packages.x86_64-linux.default;
+    enable = true;
+    variables = {
+      work = "firefox 'ext+container:name=Work&url={}'";
+      home = "firefox {}";
     };
+    rules = [
+      "work:app.class=Slack"
+      "work:app.class=org.telegram.desktop;app.title='.*Work related group name.*'"
+    ];
+    default = "home";
   };
+}
 ```
-
 
 # Acknowledgements
 
-* [b-r-o-w-s-e](https://github.com/BlakeWilliams/b-r-o-w-s-e) project and [related article](https://blakewilliams.me/posts/handling-macos-url-schemes-with-go): great example of handling URLs with Golang on macOS
-* [Finicky](https://github.com/johnste/finicky) project: inspiration for Autobrowser, good example of handling more complex URL events
+- [b-r-o-w-s-e](https://github.com/BlakeWilliams/b-r-o-w-s-e) project and [related article](https://blakewilliams.me/posts/handling-macos-url-schemes-with-go): great example of handling URLs with Golang on macOS
+- [Finicky](https://github.com/johnste/finicky) project: inspiration for Autobrowser, good example of handling more complex URL events
