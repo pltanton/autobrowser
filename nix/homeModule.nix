@@ -1,26 +1,30 @@
-{ config, lib, pkgs, ... }:
-with lib;
-let
-  cfg = config.programs.autobrowser;
-  configFile = pkgs.writeText "autobrowser.config"
-    (builtins.concatStringsSep "\n" (
-      (lib.mapAttrsToList (k: v: "${k}:=${v}") cfg.variables) ++
-      cfg.rules ++
-      [ "${cfg.default}:fallback" ]
-    ));
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+with lib; let
+  cfg = config.programs.autobrowser;
+  configFile =
+    pkgs.writeText "autobrowser.config"
+    (builtins.concatStringsSep "\n" (
+      (lib.mapAttrsToList (k: v: "${k}:=${v}") cfg.variables)
+      ++ cfg.rules
+      ++ ["${cfg.default}:fallback"]
+    ));
+in {
   options.programs.autobrowser = {
     enable = lib.mkEnableOption "whenever to enable autobrowser as default browser";
-    package = mkPackageOption pkgs "autobrowser" { };
+    package = mkPackageOption pkgs "autobrowser" {};
     variables = mkOption {
       type = with lib.types; attrsOf str;
       description = "Attribute set of variables";
-      default = { };
+      default = {};
     };
     rules = mkOption {
       type = with lib.types; listOf str;
-      example = [ "firefox {}:app.class=telegram" "firefox -p work {}:url.regex='.*atlassian.org.*'" ];
+      example = ["firefox {}:app.class=telegram" "firefox -p work {}:url.regex='.*atlassian.org.*'"];
       description = "List of rules";
     };
     default = mkOption {
@@ -33,7 +37,7 @@ in
   config = mkIf cfg.enable {
     home.packages = [
       (pkgs.writeTextDir "share/applications/autobrowser.desktop"
-        (lib.generators.toINI { } {
+        (lib.generators.toINI {} {
           "Desktop Entry" = {
             Type = "Application";
             Exec = "${cfg.package}/bin/autobrowser -config ${configFile} -url %u";
@@ -55,4 +59,3 @@ in
     };
   };
 }
-
