@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	ipc "github.com/labi-le/hyprland-ipc-client"
+	ipc "github.com/labi-le/hyprland-ipc-client/v3"
 )
 
 type hyprlandProvider struct {
@@ -14,7 +14,7 @@ type hyprlandProvider struct {
 
 func newHyprlandProvider() deInfoProvider {
 	return &hyprlandProvider{
-		c: ipc.NewClient(os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")),
+		c: ipc.MustClient(os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")),
 	}
 }
 

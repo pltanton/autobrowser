@@ -2,13 +2,11 @@ module github.com/pltanton/autobrowser/linux
 
 go 1.22.1
 
-require github.com/labi-le/hyprland-ipc-client v1.0.3
-
-require github.com/pltanton/autobrowser/common v0.0.0
-
 require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/joshuarubin/go-sway v1.2.0
+	github.com/labi-le/hyprland-ipc-client/v3 v3.0.2
+	github.com/pltanton/autobrowser/common v0.0.0
 )
 
 require (

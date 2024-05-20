@@ -5,8 +5,7 @@
 buildGoModule {
   pname = "autobrowser";
   version = "0";
-  # vendorHash = "sha256-W4WltWSZ1hJPUusaH3iRHo4HD5xmz3+/kOGxEspVF30=";
-  vendorHash = "sha256-GWrflGa6evgehcHQujac67llQJWnRIQbBFna26DYizk=";
+  vendorHash = "sha256-dvu80fFm3vIBjhk9k9Z5h9J5qTbvl3Tq1MCMQVJ+ru8=";
   meta = with lib; {
     homepage = "https://github.com/pltanton/autobrowser";
     description = "Automatically determine browser depending on provided rules";

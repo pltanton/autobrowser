@@ -102,7 +102,7 @@ Change paths for your setup if needed.
 ```ini
 [Desktop Entry]
 Categories=Network;WebBrowser
-Exec=~/go/bin/autobrowser-linux -config ~/.config/autobrowser.config -url %u
+Exec=~/go/bin/autobrowser -config ~/.config/autobrowser.config -url %u
 Icon=browser
 MimeType=x-scheme-handler/http;x-scheme-handler/https
 Name=Autobrowser: select browser by contextual rules

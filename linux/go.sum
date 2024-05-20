@@ -6,8 +6,8 @@ github.com/joshuarubin/go-sway v1.2.0 h1:t3eqW504//uj9PDwFf0+IVfkD+WoOGaDX5gYIe0
 github.com/joshuarubin/go-sway v1.2.0/go.mod h1:qcDd6f25vJ0++wICwA1BainIcRC67p2Mb4lsrZ0k3/k=
 github.com/joshuarubin/lifecycle v1.0.0 h1:N/lPEC8f+dBZ1Tn99vShqp36LwB+LI7XNAiNadZeLUQ=
 github.com/joshuarubin/lifecycle v1.0.0/go.mod h1:sRy++ATvR9Ee21tkRdFkQeywAWvDsue66V70K0Dnl54=
-github.com/labi-le/hyprland-ipc-client v1.0.3 h1:NvfazDlMf/pKl8sAqAO7BUwLEo3xxBcGgMP8PKT7R6g=
-github.com/labi-le/hyprland-ipc-client v1.0.3/go.mod h1:JZ+LBSfp0aO33qOm6TMYqe7qD8CO9d8jMpGpqz6Yf3I=
+github.com/labi-le/hyprland-ipc-client/v3 v3.0.2 h1:FhijVxBIiqzaRWINsuj0cy/cuBzzci4nzPfbcuHb50M=
+github.com/labi-le/hyprland-ipc-client/v3 v3.0.2/go.mod h1:5y18Ty27Br/BQcyhC45CaNofWmwXR8VzswlNnb5CYZA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

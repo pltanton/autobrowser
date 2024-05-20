@@ -40,7 +40,7 @@ in {
         (lib.generators.toINI {} {
           "Desktop Entry" = {
             Type = "Application";
-            Exec = "${cfg.package}/bin/autobrowser-linux -config ${configFile} -url %u";
+            Exec = "${cfg.package}/bin/autobrowser -config ${configFile} -url %u";
             Terminal = false;
             Name = "Autobrowser: select browser by contextual rules";
             Icon = "browser";
