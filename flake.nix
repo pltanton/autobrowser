@@ -5,6 +5,7 @@
 
   outputs = inputs @ {flakelight, ...}:
     flakelight ./. {
+      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
       devShell.packages = pkgs: with pkgs; [go alejandra dprint];
       formatters = {
         "*.yml" = "dprint fmt";

@@ -6,13 +6,11 @@
 }:
 with lib; let
   cfg = config.programs.autobrowser;
-  configFile =
-    pkgs.writeText "autobrowser.config"
-    (builtins.concatStringsSep "\n" (
-      (lib.mapAttrsToList (k: v: "${k}:=${v}") cfg.variables)
-      ++ cfg.rules
-      ++ ["${cfg.default}:fallback"]
-    ));
+  configText = builtins.concatStringsSep "\n" (
+    (lib.mapAttrsToList (k: v: "${k}:=${v}") cfg.variables)
+    ++ cfg.rules
+    ++ ["${cfg.default}:fallback"]
+  );
 in {
   options.programs.autobrowser = {
     enable = lib.mkEnableOption "whenever to enable autobrowser as default browser";
@@ -33,24 +31,33 @@ in {
       default = "";
       example = "firefox {}";
     };
+
+    desktop =
+      pkgs.writeTextDir "share/applications/autobrowser.desktop"
+      (lib.generators.toINI {} {
+        "Desktop Entry" = {
+          Type = "Application";
+          Exec = "${cfg.package}/bin/autobrowser -url %u";
+          Terminal = false;
+          Name = "Autobrowser: select browser by contextual rules";
+          Icon = "browser";
+          Categories = "Network;WebBrowser";
+          MimeType = "x-scheme-handler/http;x-scheme-handler/https";
+        };
+      });
   };
   config = mkIf cfg.enable {
-    home.packages = [
-      (pkgs.writeTextDir "share/applications/autobrowser.desktop"
-        (lib.generators.toINI {} {
-          "Desktop Entry" = {
-            Type = "Application";
-            Exec = "${cfg.package}/bin/autobrowser -config ${configFile} -url %u";
-            Terminal = false;
-            Name = "Autobrowser: select browser by contextual rules";
-            Icon = "browser";
-            Categories = "Network;WebBrowser";
-            MimeType = "x-scheme-handler/http;x-scheme-handler/https";
-          };
-        }))
-    ];
+    xdg.configFile."autobrowser.config".text = configText;
 
-    xdg.mimeApps = {
+    home.packages =
+      [cfg.package]
+      ++ (
+        if pkgs.stdenv.isLinux
+        then [desktop]
+        else []
+      );
+
+    xdg.mimeApps = mkIf pkgs.stdenv.isLinux {
       defaultApplications = {
         "x-scheme-handler/http" = "autobrowser.desktop";
         "x-scheme-handler/https" = "autobrowser.desktop";

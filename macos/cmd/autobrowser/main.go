@@ -26,6 +26,13 @@ func parseConfig() string {
 }
 
 func main() {
+	f, err := os.OpenFile("/Users/anton/autobrowser.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err == nil {
+		logger := slog.New(slog.NewTextHandler(f, nil))
+		slog.SetDefault(logger)
+	}
+	defer f.Close()
+
 	slog.Debug("Autobrowser launched")
 	cfg := parseConfig()
 	if cfg == "" {

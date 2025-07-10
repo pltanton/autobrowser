@@ -110,7 +110,9 @@ Terminal=false
 Type=Application
 ```
 
-### Nix flakes
+## Nix home-manager
+
+This setup works booth for linux and darwin environments.
 
 Actual flakes provides overlay (`overlays.default`) and module for home-manager (`autobrowser.homeModules.default`).
 
@@ -127,10 +129,16 @@ Example of home-manager module configuration:
     variables = {
       work = "firefox 'ext+container:name=Work&url={}'";
       home = "firefox {}";
+
+      # Example for darwin (MacOS) configuration
+      work-darwin = "open -a 'Zen' 'ext+container:name=Work&url={}'";
     };
     rules = [
       "work:app.class=Slack"
       "work:app.class=org.telegram.desktop;app.title='.*Work related group name.*'"
+
+      # Example for darwin (MacOS) configuration
+      "work-darwin:app.bundle_id='com.tinyspeck.slackmacgap'"
     ];
     default = "home";
   };
