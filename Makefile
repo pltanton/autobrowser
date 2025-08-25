@@ -15,3 +15,14 @@ build-macos: clean
 .PHONY: install-macos
 install-macos: build-macos
 	cp -r out/Autobrowser.app ~/Applications
+
+.PHONY: build-macos-and-install-dev
+build-macos-and-install-dev: clean
+	mkdir -p "out/AutobrowserDev.app"
+	cp macos/assets/AppIcon.icns out/AutobrowserDev.app
+	sed -e 's/Autobrowser/AutobrowserDev/g' \
+		-e 's/autobrowser/autobrowser-dev/g' \
+		-e 's/com\.pltanton\.autobrowser/dev.pltanton.autobrowser.dev/g' \
+		macos/assets/Info.plist > out/AutobrowserDev.app/Info.plist
+	go build -C macos -o ../out/AutobrowserDev.app/autobrowser-dev cmd/autobrowser/main.go
+	cp -r out/AutobrowserDev.app ~/Applications
