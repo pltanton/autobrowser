@@ -1,6 +1,6 @@
 # Autobrowser TOML Configuration Example
 
-# Variables - Define browser commands that can be reused in rules
+# Global Variables - Define browser commands that can be reused in rules
 [variables]
 # Firefox with Work container for work-related URLs
 work = "firefox 'ext+container:name=Work&url={}'"
@@ -8,29 +8,8 @@ work = "firefox 'ext+container:name=Work&url={}'"
 personal = "firefox {}"
 # Chrome for development
 dev = "google-chrome {}"
-# MacOS-specific command using Zen browser
-work_mac = "open -a 'Zen' 'ext+container:name=Work&url={}'"
 
-# Rules - Define which browser to use based on context
-[[rules]]
-# Rule for opening links from Slack in Work container
-command = "work"
-[rules.matchers]
-app_class = "Slack"
-
-[[rules]]
-# Rule for opening links from Telegram with specific title pattern
-command = "work"
-[rules.matchers]
-app_class = "org.telegram.desktop"
-app_title = ".*Work related group name.*"
-
-[[rules]]
-# Rule for macOS-specific Slack app
-command = "work_mac"
-[rules.matchers]
-app_bundle_id = "com.tinyspeck.slackmacgap"
-
+# Global Rules - Apply to all operating systems
 [[rules]]
 # Rule for opening Jira URLs in Work container
 command = "work"
@@ -49,5 +28,46 @@ command = "dev"
 [rules.matchers]
 url_host = "localhost"
 
-# Default browser to use if no rules match
+# Global Default browser to use if no rules match
 default = "personal"
+
+# Linux-specific configuration
+[linux]
+variables = {
+  # Linux-specific browser commands
+  work = "firefox -p work {}"
+}
+
+# Linux-specific rules
+[[linux.rules]]
+command = "work"
+[linux.rules.matchers]
+app_class = "Slack"
+
+[[linux.rules]]
+command = "work"
+[linux.rules.matchers]
+app_class = "org.telegram.desktop"
+app_title = ".*Work related group name.*"
+
+# Darwin (macOS) specific configuration
+[darwin]
+variables = {
+  # macOS-specific browser commands
+  work = "open -a 'Zen' 'ext+container:name=Work&url={}'",
+  personal = "open -a 'Safari' '{}'"
+}
+
+# macOS-specific rules
+[[darwin.rules]]
+command = "work"
+[darwin.rules.matchers]
+app_bundle_id = "com.tinyspeck.slackmacgap"
+
+[[darwin.rules]]
+command = "work"
+[darwin.rules.matchers]
+app_display_name = "Slack"
+
+# macOS-specific default (overrides global default)
+darwin.default = "personal"

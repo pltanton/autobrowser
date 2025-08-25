@@ -14,24 +14,42 @@ Automatically choosing web-browser depends on environment context rules.
 ## Example
 
 ```toml
-# Variables - Define browser commands that can be reused in rules
+# Global Variables - Define browser commands that can be reused in rules
 [variables]
 work = "firefox 'ext+container:name=Work&url={}'"
 personal = "firefox {}"
 
-# Rules - Define which browser to use based on context
-[[rules]]
-command = "work"
-[rules.matchers]
-app_class = "Slack"
-
+# Global Rules - Apply to all operating systems
 [[rules]]
 command = "work"
 [rules.matchers]
 url_regex = ".*jira.*"
 
-# Default browser to use if no rules match
+# Global Default browser
 default = "personal"
+
+# OS-specific configuration (Linux)
+[linux]
+variables = {
+  work = "firefox -p work {}"
+}
+
+[[linux.rules]]
+command = "work"
+[linux.rules.matchers]
+app_class = "Slack"
+
+# OS-specific configuration (macOS)
+[darwin]
+variables = {
+  work = "open -a 'Zen' 'ext+container:name=Work&url={}'",
+  personal = "open -a 'Safari' '{}'"
+}
+
+[[darwin.rules]]
+command = "work"
+[darwin.rules.matchers]
+app_bundle_id = "com.tinyspeck.slackmacgap"
 ```
 
 Other examples can be found in the `examples` folder
@@ -40,11 +58,18 @@ Other examples can be found in the `examples` folder
 
 Autobrowser uses TOML for configuration. The application evaluates rules in order and applies the URL to the first matched command.
 
-The configuration consists of three main sections:
+The configuration consists of these main sections:
 
+### Global configuration
 1. **Variables**: Define reusable browser commands
 2. **Rules**: Define matchers and corresponding browser commands
 3. **Default**: Specify the fallback browser if no rules match
+
+### OS-specific configuration
+4. **Linux**: Linux-specific variables, rules, and default browser
+5. **Darwin**: macOS-specific variables, rules, and default browser
+
+OS-specific settings override global settings when both are defined.
 
 In browser commands, the `{}` placeholder will be replaced with the clicked URL.
 
@@ -205,7 +230,38 @@ fallback = true
 default = "firefox {}"
 ```
 
-Note: The order of rules in the TOML file matters, just as it did in the old format.
+## OS-Specific Configuration
+
+For OS-specific settings:
+
+```toml
+# Linux-specific configuration
+[linux]
+variables = {
+  work = "firefox -p work {}"
+}
+
+[[linux.rules]]
+command = "work"
+[linux.rules.matchers]
+app_class = "Slack"
+
+# macOS-specific configuration
+[darwin]
+variables = {
+  work = "open -a 'Safari' '{}'"
+}
+
+[[darwin.rules]]
+command = "work"
+[darwin.rules.matchers]
+app_bundle_id = "com.tinyspeck.slackmacgap"
+
+# macOS-specific default browser
+darwin.default = "open -a 'Safari' '{}'"
+```
+
+Note: The order of rules in the TOML file matters, just as it did in the old format. OS-specific rules are evaluated after global rules.
 
 # Acknowledgements
 
