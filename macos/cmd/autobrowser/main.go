@@ -12,6 +12,8 @@ import (
 	"github.com/pltanton/autobrowser/common/pkg/matchers/urlmatcher"
 	"github.com/pltanton/autobrowser/macos/internal/macevents"
 	"github.com/pltanton/autobrowser/macos/internal/matchers/appmatcher"
+	"github.com/pltanton/autobrowser/macos/internal/oslog"
+	"golang.org/x/term"
 )
 
 func parseConfig() string {
@@ -26,6 +28,11 @@ func parseConfig() string {
 }
 
 func main() {
+	if !term.IsTerminal(int(os.Stdout.Fd())) {
+		slog.Info("Current runtime considered as non-terminal, redirecting logs to OSLog")
+		slog.SetDefault(slog.New(oslog.NewHandler()))
+	}
+
 	slog.Debug("Autobrowser launched")
 	cfg := parseConfig()
 	if cfg == "" {

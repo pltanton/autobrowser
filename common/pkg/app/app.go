@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,7 +14,7 @@ import (
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
-func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegistry) {
+func SetupAndRun(configPath string, urlString string, registry *matchers.MatchersRegistry) {
 	configFile, err := os.Open(configPath)
 	if err != nil {
 		slog.Error("Failed to open cofig file", "err", err)
@@ -49,18 +50,22 @@ func SetupAndRun(configPath string, url string, registry *matchers.MatchersRegis
 					}
 				}
 
+				urlEscaped := url.QueryEscape(urlString)
+
 				for i := range command {
-					command[i] = strings.Replace(command[i], "{}", url, 1)
+					command[i] = strings.Replace(command[i], "{}", urlEscaped, 1)
+					command[i] = strings.Replace(command[i], "{escape}", urlEscaped, 1)
 				}
 
-				cmd := exec.Command(command[0], command[1:]...)
-				cmd.Stdin = os.Stdin
-				cmd.Stdout = os.Stdout
+				slog.Info("Launching CMD", "command", command)
 
-				if err := cmd.Run(); err != nil {
-					slog.Error("Failed to run command", "err", err)
+				out, err := exec.Command(command[0], command[1:]...).CombinedOutput()
+				if err != nil {
+					slog.Error("Failed to run command", "err", err, "output", string(out))
 					os.Exit(1)
 				}
+
+				slog.Debug("Command executed successfully", "output", string(out))
 				return
 			}
 		} else {
