@@ -53,7 +53,7 @@ func SetupAndRun(configPath string, urlString string, registry *matchers.Matcher
 				urlEscaped := url.QueryEscape(urlString)
 
 				for i := range command {
-					command[i] = strings.Replace(command[i], "{}", urlEscaped, 1)
+					command[i] = strings.Replace(command[i], "{}", urlString, 1)
 					command[i] = strings.Replace(command[i], "{escape}", urlEscaped, 1)
 				}
 

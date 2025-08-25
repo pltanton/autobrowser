@@ -2,6 +2,7 @@ package matchers
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/pltanton/autobrowser/common/pkg/config"
 )
@@ -32,10 +33,12 @@ func (r *MatchersRegistry) EvalRule(rule config.Rule) (bool, error) {
 		}
 
 		if !matcher.Match(args) {
+			slog.Debug("Matcher not matched", "name", name, "matcher", matcher, "command", rule.Command)
 			return false, nil
 		}
 	}
 
+	slog.Debug("Rule matched", "command", rule)
 	return true, nil
 }
 
