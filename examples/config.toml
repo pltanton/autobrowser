@@ -1,0 +1,53 @@
+# Autobrowser TOML Configuration Example
+
+# Variables - Define browser commands that can be reused in rules
+[variables]
+# Firefox with Work container for work-related URLs
+work = "firefox 'ext+container:name=Work&url={}'"
+# Regular Firefox for personal browsing
+personal = "firefox {}"
+# Chrome for development
+dev = "google-chrome {}"
+# MacOS-specific command using Zen browser
+work_mac = "open -a 'Zen' 'ext+container:name=Work&url={}'"
+
+# Rules - Define which browser to use based on context
+[[rules]]
+# Rule for opening links from Slack in Work container
+command = "work"
+[rules.matchers]
+app_class = "Slack"
+
+[[rules]]
+# Rule for opening links from Telegram with specific title pattern
+command = "work"
+[rules.matchers]
+app_class = "org.telegram.desktop"
+app_title = ".*Work related group name.*"
+
+[[rules]]
+# Rule for macOS-specific Slack app
+command = "work_mac"
+[rules.matchers]
+app_bundle_id = "com.tinyspeck.slackmacgap"
+
+[[rules]]
+# Rule for opening Jira URLs in Work container
+command = "work"
+[rules.matchers]
+url_regex = ".*jira.*"
+
+[[rules]]
+# Rule for opening GitHub in development browser
+command = "dev"
+[rules.matchers]
+url_host = "github.com"
+
+[[rules]]
+# Rule for opening localhost URLs in development browser
+command = "dev"
+[rules.matchers]
+url_host = "localhost"
+
+# Default browser to use if no rules match
+default = "personal"

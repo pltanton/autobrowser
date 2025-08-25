@@ -13,65 +13,76 @@ Automatically choosing web-browser depends on environment context rules.
 
 ## Example
 
+```toml
+# Variables - Define browser commands that can be reused in rules
+[variables]
+work = "firefox 'ext+container:name=Work&url={}'"
+personal = "firefox {}"
+
+# Rules - Define which browser to use based on context
+[[rules]]
+command = "work"
+[rules.matchers]
+app_class = "Slack"
+
+[[rules]]
+command = "work"
+[rules.matchers]
+url_regex = ".*jira.*"
+
+# Default browser to use if no rules match
+default = "personal"
 ```
-work:=firefox -p job {}:url.regex='.*jira.*'
 
-work:app.class=Slack # Open all jira links from slack with job firefox profile
-work:app.class=org.telegram.desktop # Open all links from the telegram app using Isolated firefox container
-
-# Default fallback
-firefox {}:fallback
-```
-
-Other examples can be found in `examples` folder
+Other examples can be found in the `examples` folder
 
 ## Configuration syntax
 
-The application just evaluates configuration rules 1 by 1 and applies url to a first matched command. Syntax can be described as:
+Autobrowser uses TOML for configuration. The application evaluates rules in order and applies the URL to the first matched command.
 
-```
-<browser_command>:<matcher_knd>.<prop_name>=<prop_value>[;<matcher_knd>.<prop_name>=<prop_value>]
-```
+The configuration consists of three main sections:
 
-Browser command is a sequence of words, divided by spaces. The first word is an executable name and the others are arguments. `{}` char sequence will be replaced with a clicked URL.
+1. **Variables**: Define reusable browser commands
+2. **Rules**: Define matchers and corresponding browser commands
+3. **Default**: Specify the fallback browser if no rules match
 
-You can escape spaces or other _non-word characters_ can be escaped by a single-quote string.
-
-To avoid repeating of same browser command you can user assignment syntax `command_name:=your command {}` for further use.
+In browser commands, the `{}` placeholder will be replaced with the clicked URL.
 
 ## Matchers
 
-### fallback
+The following matchers are available in the TOML configuration:
 
-This matcher always succeeds. Use it at the end of a configuration to specify the default browser.
+### App Matchers
 
-### app
-
-Matches by source application.
+Match by source application.
 
 Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_.
 
 Hyprland/Sway/Gnome Properties:
 
-- _title_: match by source window title with regex
-- _class_: match by window class
+- `app_title`: Match by source window title with regex
+- `app_class`: Match by window class
 
 MacOS Properties:
 
-- _display_name_ - match by app display name (ex: `Slack`)
-- _bundle_id_ - match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
-- _bundle_path_ - match by App Bundle path (ex: `/Applications/Slack.app`)
-- _executable_path_ - match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
+- `app_display_name`: Match by app display name (ex: `Slack`)
+- `app_bundle_id`: Match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
+- `app_bundle_path`: Match by App Bundle path (ex: `/Applications/Slack.app`)
+- `app_executable_path`: Match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
 
-### url
+### URL Matchers
 
 Match by a clicked URL.
 
 Properties:
 
-- _host_: match URL by host
-- _scheme_: match URL by scheme
-- _regex_: match full URL by regex
+- `url_host`: Match URL by host
+- `url_scheme`: Match URL by scheme
+- `url_regex`: Match full URL by regex
+
+### Fallback
+
+Set `fallback = true` in a rule's matchers or use the `default` setting at the root of the config to specify a default browser.
 
 # Setup
 
@@ -95,14 +106,14 @@ Clone the repository and run, you can find a result binary in the `out` director
 make build-linux
 ```
 
-Create config at `~/.config/autobrowser.config`.
+Create a TOML configuration file at `~/.config/autobrowser.toml`.
 Then add the following .desktop file to `~/.local/share/applications/` and set it as the default browser.
 Change paths for your setup if needed.
 
 ```ini
 [Desktop Entry]
 Categories=Network;WebBrowser
-Exec=~/go/bin/autobrowser -config ~/.config/autobrowser.config -url %u
+Exec=~/go/bin/autobrowser -config ~/.config/autobrowser.toml -url %u
 Icon=browser
 MimeType=x-scheme-handler/http;x-scheme-handler/https
 Name=Autobrowser: select browser by contextual rules
@@ -133,6 +144,7 @@ Example of home-manager module configuration:
       # Example for darwin (MacOS) configuration
       work-darwin = "open -a 'Zen' 'ext+container:name=Work&url={}'";
     };
+    # Your configuration will be automatically converted to TOML format internally
     rules = [
       "work:app.class=Slack"
       "work:app.class=org.telegram.desktop;app.title='.*Work related group name.*'"
@@ -144,6 +156,56 @@ Example of home-manager module configuration:
   };
 }
 ```
+
+# Migration from Old Format to TOML
+
+Autobrowser now uses TOML for configuration. Here's how to migrate your existing configuration:
+
+## Variable Definitions
+
+Old format:
+```
+work:=firefox 'ext+container:name=Work&url={}'
+```
+
+New TOML format:
+```toml
+[variables]
+work = "firefox 'ext+container:name=Work&url={}'"
+```
+
+## Rules
+
+Old format:
+```
+work:app.class=Slack
+firefox {}:url.regex='.*github\.com.*'
+firefox {}:fallback
+```
+
+New TOML format:
+```toml
+[[rules]]
+command = "work"
+[rules.matchers]
+app_class = "Slack"
+
+[[rules]]
+command = "firefox {}"
+[rules.matchers]
+url_regex = ".*github\\.com.*"
+
+# For fallback, either use:
+[[rules]]
+command = "firefox {}"
+[rules.matchers]
+fallback = true
+
+# Or more simply:
+default = "firefox {}"
+```
+
+Note: The order of rules in the TOML file matters, just as it did in the old format.
 
 # Acknowledgements
 

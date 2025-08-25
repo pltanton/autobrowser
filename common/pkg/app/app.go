@@ -1,9 +1,7 @@
 package app
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/url"
 	"os"
@@ -15,22 +13,20 @@ import (
 )
 
 func SetupAndRun(configPath string, urlString string, registry *matchers.MatchersRegistry) {
-	configFile, err := os.Open(configPath)
+	// Load and parse TOML configuration
+	tomlParser, err := config.LoadTomlConfig(configPath)
 	if err != nil {
-		slog.Error("Failed to open cofig file", "err", err)
+		slog.Error("Failed to load TOML configuration", "err", err)
 		os.Exit(1)
 	}
 
-	parser := config.NewParser(configFile)
+	// Convert TOML config to instructions
+	instructions := tomlParser.ConvertToInstructions()
 
 	variables := make(map[string][]string)
 
-	for instruction, err := parser.ParseInstruction(); !errors.Is(err, io.EOF); instruction, err = parser.ParseInstruction() {
-		if err != nil {
-			slog.Error("Failed to parse instruction", "err", err)
-			os.Exit(1)
-		}
-
+	// Process all instructions
+	for _, instruction := range instructions {
 		if assignment, ok := instruction.Assignment(); ok {
 			variables[assignment.Key] = assignment.Value
 		} else if rule, ok := instruction.Rule(); ok {
@@ -73,5 +69,5 @@ func SetupAndRun(configPath string, urlString string, registry *matchers.Matcher
 		}
 	}
 
-	slog.Info("Nothing matched, please specify 'fallback' rule to setup default browser!")
+	slog.Info("Nothing matched, please specify a default rule or add a fallback rule in your configuration!")
 }
