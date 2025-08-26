@@ -73,7 +73,7 @@ default_command = "firefox"
 
 Matches by source application.
 
-Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_.
+Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_. When using Home Manager, Linux and macOS app matcher properties are properly typed and validated.
 
 ```toml
 [[rules.matchers]]
@@ -92,6 +92,10 @@ MacOS Properties:
 - _bundle_id_ - match by App Bundle ID (ex: `com.tinyspeck.slackmacgap`)
 - _bundle_path_ - match by App Bundle path (ex: `/Applications/Slack.app`)
 - _executable_path_ - match by app executable path (ex: `/Applications/Slack.app/Contents/MacOS/Slack`)
+
+When using these properties in Nix Home Manager configuration, use camelCase format: `displayName`, `bundleId`, `bundlePath`, `executablePath`.
+
+Note: When using Home Manager, you only need to specify the properties you want to use, and they are strictly typed.
 
 ### url
 
@@ -152,6 +156,10 @@ This setup works both for Linux and macOS (Darwin) environments.
 
 The flake provides an overlay (`overlays.default`) and a module for home-manager (`homeModules.default`).
 
+The home-manager module provides strictly typed matcher configurations for improved type safety and validation. Each matcher type (`url`, `app`, `fallback`) has its own specific set of properties that are properly validated.
+
+Note: Nix configuration uses camelCase for properties (e.g., `bundleId`), while the generated TOML uses snake_case (e.g., `bundle_id`).
+
 Example of home-manager module configuration:
 
 ```nix
@@ -184,22 +192,58 @@ Example of home-manager module configuration:
       {
         command = "work";
         matchers = [
-          { type = "app"; class = "Slack"; }
-          { type = "url"; regex = ".*jira.*"; }
+          # Strictly typed app matcher for Linux
+          { 
+            type = "app";    # Required field
+            class = "Slack"; # Window class (Linux)
+            # title = ".*";  # Optional window title regex
+          }
+          # Strictly typed URL matcher
+          {
+            type = "url";      # Required field
+            regex = ".*jira.*"; # Match URL by regex pattern
+          }
         ];
       },
       # Open GitHub links in personal browser
       {
         command = "personal";
         matchers = [
-          { type = "url"; host = "github.com"; }
+          {
+            type = "url";
+            host = "github.com";
+          }
         ];
       },
       # Open YouTube videos in mpv
       {
         command = "youtube";
         matchers = [
-          { type = "url"; regex = ".*youtube\\.com/watch.*|.*youtu\\.be/.*"; }
+          {
+            type = "url";
+            regex = ".*youtube\\.com/watch.*|.*youtu\\.be/.*";
+          }
+        ];
+      },
+      # macOS specific example
+      {
+        command = "personal";
+        matchers = [
+          {
+            type = "app";
+            # macOS specific properties (use camelCase in Nix)
+            displayName = "Safari";      # Match by app display name
+            # bundleId = "com.apple.Safari";  # Optional
+            # bundlePath = "/Applications/Safari.app";  # Optional
+            # executablePath = "/Applications/Safari.app/Contents/MacOS/Safari";  # Optional
+          }
+        ];
+      },
+      # Simple fallback example
+      {
+        command = "personal";
+        matchers = [
+          { type = "fallback"; } # Always matches
         ];
       }
     ];

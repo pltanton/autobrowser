@@ -18,11 +18,6 @@ buildGoModule {
     then "macos"
     else "linux";
 
-  buildInputs = lib.optionals stdenv.isDarwin [
-    darwin.apple_sdk.frameworks.Cocoa
-    darwin.apple_sdk.frameworks.Foundation
-  ];
-
   postInstall = lib.optionalString stdenv.isDarwin ''
     # Create macOS app bundle
     mkdir -p $out/Applications/Autobrowser.app/Contents/{MacOS,Resources}
