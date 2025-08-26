@@ -1,77 +1,105 @@
 package app
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/url"
 	"os"
 	"os/exec"
 	"strings"
 
-	"github.com/pltanton/autobrowser/common/pkg/config"
+	"github.com/pltanton/autobrowser/common/pkg/configuration"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
 )
 
-func SetupAndRun(configPath string, urlString string, registry *matchers.MatchersRegistry) {
-	configFile, err := os.Open(configPath)
+func SetupAndRun(configPath string, urlString string, r *matchers.MatchersRegistry) {
+	c, err := configuration.ParseConfigFile(configPath)
 	if err != nil {
-		slog.Error("Failed to open cofig file", "err", err)
+		slog.Error("Failed to parse cofig file", "path", configPath, "err", err)
 		os.Exit(1)
 	}
 
-	parser := config.NewParser(configFile)
+	err = evaluate(c, r, urlString)
+	if err != nil {
+		slog.Error("Failed to evaluate", "err", err)
+		os.Exit(1)
+	}
+}
 
-	variables := make(map[string][]string)
+func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString string) error {
+	var command configuration.Command
+	var matched bool
 
-	for instruction, err := parser.ParseInstruction(); !errors.Is(err, io.EOF); instruction, err = parser.ParseInstruction() {
-		if err != nil {
-			slog.Error("Failed to parse instruction", "err", err)
-			os.Exit(1)
+	for ruleN, rule := range c.Rules {
+		allMatched := true
+		for matcherN, matcherConfig := range rule.Matchers {
+			logWithMatcher := slog.With("type", matcherConfig.Type, "rule id", ruleN, "matcher id", matcherN)
+			logWithMatcher.Debug("Start matching")
+
+			matcher, err := r.GetMatcher(matcherConfig.Type)
+			if err != nil {
+				return err
+			}
+
+			ok, err := matcher.Match(c.ConfigProvider(matcherConfig))
+			if err != nil {
+				return err
+			}
+
+			logWithMatcher.Debug("Matcher match result", "matched", ok)
+			if !ok {
+				allMatched = false
+				break
+			}
 		}
 
-		if assignment, ok := instruction.Assignment(); ok {
-			variables[assignment.Key] = assignment.Value
-		} else if rule, ok := instruction.Rule(); ok {
-			matches, err := registry.EvalRule(rule)
-			if err != nil {
-				slog.Error("Failed to evaluate rule", "err", err)
-				os.Exit(1)
-			}
+		if !allMatched {
+			continue
+		}
 
-			if matches {
-				// Replace all placeholders in command to url
-				command := rule.Command
-				// Try find command in variables if it's single word command
-				if len(command) == 1 {
-					if newCommand, ok := variables[command[0]]; ok {
-						command = newCommand
-					}
-				}
+		matched = true
+		var ok bool
+		command, ok = c.Commands[rule.Command]
+		if !ok {
+			slog.Debug("Command not declared, using command as is", "command", rule.Command)
+			command = configuration.NewDefaultCommand(rule.Command)
+		}
 
-				urlEscaped := url.QueryEscape(urlString)
+		break
+	}
 
-				for i := range command {
-					command[i] = strings.Replace(command[i], "{}", urlString, 1)
-					command[i] = strings.Replace(command[i], "{escape}", urlEscaped, 1)
-				}
-
-				slog.Info("Launching CMD", "command", command)
-
-				out, err := exec.Command(command[0], command[1:]...).CombinedOutput()
-				if err != nil {
-					slog.Error("Failed to run command", "err", err, "output", string(out))
-					os.Exit(1)
-				}
-
-				slog.Debug("Command executed successfully", "output", string(out))
-				return
-			}
-		} else {
-			slog.Error(fmt.Sprintf("Unknown instruction type %+v", instruction))
+	if !matched {
+		slog.Debug("None of matchers matched, using default command")
+		var ok bool
+		command, ok = c.Commands[c.DefaultCommand]
+		if !ok {
+			slog.Debug("Default command not declared, using command as is", "command", c.DefaultCommand)
+			command = configuration.NewDefaultCommand(c.DefaultCommand)
 		}
 	}
 
-	slog.Info("Nothing matched, please specify 'fallback' rule to setup default browser!")
+	return runCommand(command, urlString)
+}
+
+func runCommand(cmdConfig configuration.Command, urlString string) error {
+	cmd := cmdConfig.CMD[:]
+
+	if cmdConfig.QueryEscape {
+		urlString = url.QueryEscape(urlString)
+	}
+
+	for i := range cmd {
+		cmd[i] = strings.Replace(cmd[i], cmdConfig.Placeholder, urlString, 1)
+	}
+
+	slog.Debug("Launching CMD", "command", cmd)
+
+	out, err := exec.Command(cmd[0], cmd[1:]...).CombinedOutput()
+	if err != nil {
+		slog.Error("Failed to run command", "err", err, "output", string(out))
+		return fmt.Errorf("failed to execute command: %w", err)
+	}
+
+	slog.Debug("Command executed successfully", "output", string(out))
+	return nil
 }

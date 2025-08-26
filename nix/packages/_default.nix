@@ -9,19 +9,14 @@ buildGoModule {
   version = "0";
   vendorHash =
     if stdenv.isDarwin
-    then "sha256-w/MoA6uOgbQVPFzApJEDLeEFviKbvKjpdaIltyZ3he0="
-    else "sha256-dvu80fFm3vIBjhk9k9Z5h9J5qTbvl3Tq1MCMQVJ+ru8=";
+    then "sha256-9asbxZJxovodDZFUNhlaF/B9fG78nDNcfhcKynFIXg8="
+    else "sha256-05D0rsPh/QLCL5i5c/xNTBozdRkPmtRQa5KU/Y0Y4pA=";
 
   src = import ../src.nix {inherit lib;};
   modRoot =
     if stdenv.isDarwin
     then "macos"
     else "linux";
-
-  buildInputs = lib.optionals stdenv.isDarwin [
-    darwin.apple_sdk.frameworks.Cocoa
-    darwin.apple_sdk.frameworks.Foundation
-  ];
 
   postInstall = lib.optionalString stdenv.isDarwin ''
     # Create macOS app bundle

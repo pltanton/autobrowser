@@ -13,17 +13,27 @@ type appMatcher struct {
 	provider *deinfo.DeInfoProvider
 }
 
+type appMatcherConfig struct {
+	Class string `toml:"class,omitempty"`
+	Title string `toml:"title,omitempty"`
+}
+
 // Match implements matchers.Matcher.
-func (m *appMatcher) Match(args map[string]string) bool {
-	if class, ok := args["class"]; ok && !m.matchByClass(class) {
-		return false
+func (m *appMatcher) Match(configProvider matchers.MatcherConfigProvider) (bool, error) {
+	var c appMatcherConfig
+	if err := configProvider(&c); err != nil {
+		return false, fmt.Errorf("failed to load app matcher config: %w", err)
 	}
 
-	if title, ok := args["title"]; ok && !m.matchByTitle(title) {
-		return false
+	if c.Class != "" && !m.matchByClass(c.Class) {
+		return false, nil
 	}
 
-	return true
+	if c.Title != "" && !m.matchByTitle(c.Title) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (m *appMatcher) matchByTitle(regex string) bool {

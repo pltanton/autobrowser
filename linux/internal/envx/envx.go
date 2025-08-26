@@ -31,7 +31,7 @@ func init() {
 	}{}
 
 	dir, _ := os.UserHomeDir()
-	flag.StringVar(&flags.ConfigPath, "config", dir+"/.config/autobrowser.config", "configuration file path")
+	flag.StringVar(&flags.ConfigPath, "config", dir+"/.config/autobrowser/config.toml", "configuration file path")
 	flag.StringVar(&flags.Url, "url", "", "url to open")
 	flag.StringVar(&flags.LogLevel, "log", "INFO", "log level: DEBUG, INFO, WARN, ERROR")
 
