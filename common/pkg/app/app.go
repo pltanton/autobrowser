@@ -32,8 +32,8 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 
 	for ruleN, rule := range c.Rules {
 		for matcherN, matcherConfig := range rule.Matchers {
-			log := slog.With("type", matcherConfig.Type, "rule id", ruleN, "matcher id", matcherN)
-			log.Debug("Start matching")
+			logWithMatcher := slog.With("type", matcherConfig.Type, "rule id", ruleN, "matcher id", matcherN)
+			logWithMatcher.Debug("Start matching")
 
 			matcher, err := r.GetMatcher(matcherConfig.Type)
 			if err != nil {
@@ -45,7 +45,7 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 				return err
 			}
 
-			log.Debug("Matcher match result", "matched", ok)
+			logWithMatcher.Debug("Matcher match result", "matched", ok)
 			if !ok {
 				continue
 			}
@@ -53,7 +53,7 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 
 			command, ok = c.Commands[rule.Command]
 			if !ok {
-				slog.Debug("Command not declared, using command as is", "command", rule.Command)
+				logWithMatcher.Debug("Command not declared, using command as is", "command", rule.Command)
 				command = configuration.NewDefaultCommand(rule.Command)
 			}
 
@@ -76,8 +76,6 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 
 func runCommand(cmdConfig configuration.Command, urlString string) error {
 	cmd := cmdConfig.CMD[:]
-
-	slog.Debug("Command config to execute", "placeholder", cmdConfig.Placeholder)
 
 	if cmdConfig.QueryEscape {
 		urlString = url.QueryEscape(urlString)
