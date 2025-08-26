@@ -1,0 +1,10 @@
+default_command = "work"
+
+command.work.cmd = "open -a 'Google Chrome' {}"
+command.personal.cmd = "open -a 'Firefox' {}"
+
+[[rules]]
+command = "personal"
+[[rules.matchers]]
+type = "app"
+bundle_id = "ru.keepcoder.Telegram"
