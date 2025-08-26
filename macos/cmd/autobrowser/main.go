@@ -19,7 +19,7 @@ func parseConfig() string {
 	var result string
 
 	dir, _ := os.UserHomeDir()
-	flag.StringVar(&result, "config", dir+"/.config/autobrowser.config", "configuration file path")
+	flag.StringVar(&result, "config", dir+"/.config/autobrowser/config.toml", "configuration file path")
 
 	flag.Parse()
 

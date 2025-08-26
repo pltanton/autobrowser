@@ -14,21 +14,32 @@ type urlMatcher struct {
 	url    *neturl.URL
 }
 
+type urlMatcherConfig struct {
+	Regex  string `toml:"regex,omitempty"`
+	Host   string `toml:"host,omitempty"`
+	Scheme string `toml:"scheme,omitempty"`
+}
+
 // Match implements matchers.Matcher.
-func (u *urlMatcher) Match(args map[string]string) bool {
-	if regex, ok := args["regex"]; ok && !u.matchByRegex(regex) {
-		return false
+func (u *urlMatcher) Match(configProvider matchers.MatcherConfigProvider) (bool, error) {
+	var c urlMatcherConfig
+	if err := configProvider(&c); err != nil {
+		return false, fmt.Errorf("failed to load url matcher config %w", err)
 	}
 
-	if host, ok := args["host"]; ok && !u.matchByHost(host) {
-		return false
+	if c.Regex != "" && !u.matchByRegex(c.Regex) {
+		return false, nil
 	}
 
-	if scheme, ok := args["scheme"]; ok && !u.matchByScheme(scheme) {
-		return false
+	if c.Host != "" && !u.matchByHost(c.Host) {
+		return false, nil
 	}
 
-	return true
+	if c.Scheme != "" && !u.matchByScheme(c.Scheme) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (u *urlMatcher) matchByHost(host string) bool {

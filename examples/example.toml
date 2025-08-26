@@ -1,0 +1,24 @@
+# Could be a defined command or plain command with default placeholder
+default_command = "personal"
+
+[command.work]
+# Command could be an array of strings
+cmd = ["firefox", "ext+container:name=Work&url=%"]
+# Default placeholder is {}
+placeholder = "%"
+# Apply query escape to URL before inserting into command
+query_escape = true
+
+[command.personal]
+cmd = "chromium {}"
+
+# List of rules, that will be applied in order, first matched rule will be used
+[[rules]]
+command = "work"
+# List of matchers works like AND condition
+[[rules.matchers]]
+type = "app"
+class = "Slack"
+[[rules.matchers]]
+type = "url"
+regex = ".*jira.*"

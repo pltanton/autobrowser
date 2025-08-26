@@ -11,45 +11,75 @@ Automatically choosing web-browser depends on environment context rules.
 
 # Configuration
 
-## Example
+Autobrowser uses TOML for configuration, providing a structured and maintainable approach.
 
+## Configuration Example
+
+```toml
+# Default command to use when no rules match
+default_command = "personal"
+
+# Define commands that can be executed
+[command.work]
+cmd = ["firefox", "-p", "work", "{}"]
+query_escape = true
+
+[command.personal]
+cmd = "firefox {}"
+
+# Define rules that determine which command to use
+[[rules]]
+command = "work"
+# Multiple matchers in a rule work as AND conditions
+[[rules.matchers]]
+type = "app"
+class = "Slack"
+[[rules.matchers]]
+type = "url"
+regex = ".*jira.*"
+
+[[rules]]
+command = "work"
+[[rules.matchers]]
+type = "app"
+class = "org.telegram.desktop"
 ```
-work:=firefox -p job {}:url.regex='.*jira.*'
 
-work:app.class=Slack # Open all jira links from slack with job firefox profile
-work:app.class=org.telegram.desktop # Open all links from the telegram app using Isolated firefox container
+Other examples can be found in the `examples` folder.
 
-# Default fallback
-firefox {}:fallback
-```
+## Configuration Syntax
 
-Other examples can be found in `examples` folder
+The configuration consists of three main sections:
 
-## Configuration syntax
+1. **Commands** - Define reusable browser commands with the `command.<name>` structure
+2. **Rules** - Define conditions for browser selection using `[[rules]]` arrays
+3. **Default Command** - Define the default browser when no rules match with `default_command`
 
-The application just evaluates configuration rules 1 by 1 and applies url to a first matched command. Syntax can be described as:
-
-```
-<browser_command>:<matcher_knd>.<prop_name>=<prop_value>[;<matcher_knd>.<prop_name>=<prop_value>]
-```
-
-Browser command is a sequence of words, divided by spaces. The first word is an executable name and the others are arguments. `{}` char sequence will be replaced with a clicked URL.
-
-You can escape spaces or other _non-word characters_ can be escaped by a single-quote string.
-
-To avoid repeating of same browser command you can user assignment syntax `command_name:=your command {}` for further use.
+Save your configuration as `~/.config/autobrowser/config.toml` or pass a custom path to Autobrowser using the `-config` flag.
 
 ## Matchers
 
+Matchers define the conditions for rules to be applied.
+
 ### fallback
 
-This matcher always succeeds. Use it at the end of a configuration to specify the default browser.
+The fallback matcher always succeeds. Instead of using a matcher, you can simply set the `default_command` property:
+
+```toml
+default_command = "firefox"
+```
 
 ### app
 
 Matches by source application.
 
 Currently supported desktop environments: _hyprland_, _gnome_, _sway_, _macos_.
+
+```toml
+[[rules.matchers]]
+type = "app"
+class = "Slack"
+```
 
 Hyprland/Sway/Gnome Properties:
 
@@ -66,6 +96,12 @@ MacOS Properties:
 ### url
 
 Match by a clicked URL.
+
+```toml
+[[rules.matchers]]
+type = "url"
+host = "github.com"
+```
 
 Properties:
 
@@ -95,14 +131,14 @@ Clone the repository and run, you can find a result binary in the `out` director
 make build-linux
 ```
 
-Create config at `~/.config/autobrowser.config`.
+Create config at `~/.config/autobrowser/config.toml`.
 Then add the following .desktop file to `~/.local/share/applications/` and set it as the default browser.
 Change paths for your setup if needed.
 
 ```ini
 [Desktop Entry]
 Categories=Network;WebBrowser
-Exec=~/go/bin/autobrowser -config ~/.config/autobrowser.config -url %u
+Exec=~/go/bin/autobrowser -config ~/.config/autobrowser/config.toml -url %u
 Icon=browser
 MimeType=x-scheme-handler/http;x-scheme-handler/https
 Name=Autobrowser: select browser by contextual rules
@@ -112,35 +148,61 @@ Type=Application
 
 ## Nix home-manager
 
-This setup works booth for linux and darwin environments.
+This setup works both for Linux and macOS (Darwin) environments.
 
-Actual flakes provides overlay (`overlays.default`) and module for home-manager (`autobrowser.homeModules.default`).
+The flake provides an overlay (`overlays.default`) and a module for home-manager (`homeModules.default`).
 
 Example of home-manager module configuration:
 
 ```nix
 {
+  pkgs,
   inputs,
   ...
 }: {
   programs.autobrowser = {
-    package = inputs.autobrowser.packages.x86_64-linux.default;
     enable = true;
-    variables = {
-      work = "firefox 'ext+container:name=Work&url={}'";
-      home = "firefox {}";
-
-      # Example for darwin (MacOS) configuration
-      work-darwin = "open -a 'Zen' 'ext+container:name=Work&url={}'";
+    package = pkgs.autobrowser;
+    defaultCommand = "personal";
+    
+    commands = {
+      work = {
+        cmd = ["firefox", "ext+container:name=Work&url={}"];
+        placeholder = "{}";
+        queryEscape = true;  # Will generate query_escape = true in TOML
+      };
+      personal = {
+        cmd = "firefox {}";
+      };
+      youtube = {
+        cmd = ["mpv", "{}"];
+      };
     };
+    
     rules = [
-      "work:app.class=Slack"
-      "work:app.class=org.telegram.desktop;app.title='.*Work related group name.*'"
-
-      # Example for darwin (MacOS) configuration
-      "work-darwin:app.bundle_id='com.tinyspeck.slackmacgap'"
+      # Open Jira links from Slack in work container
+      {
+        command = "work";
+        matchers = [
+          { type = "app"; class = "Slack"; }
+          { type = "url"; regex = ".*jira.*"; }
+        ];
+      },
+      # Open GitHub links in personal browser
+      {
+        command = "personal";
+        matchers = [
+          { type = "url"; host = "github.com"; }
+        ];
+      },
+      # Open YouTube videos in mpv
+      {
+        command = "youtube";
+        matchers = [
+          { type = "url"; regex = ".*youtube\\.com/watch.*|.*youtu\\.be/.*"; }
+        ];
+      }
     ];
-    default = "home";
   };
 }
 ```
