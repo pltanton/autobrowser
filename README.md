@@ -168,5 +168,5 @@ log stream --predicate 'subsystem == "dev.pltanton.autobrowser"' --style compact
 
 ## Acknowledgements
 
-- [b-r-o-w-s-e](https://github.com/BlakeWilliams/b-r-o-w-s-e)
-- [Finicky](https://github.com/johnste/finicky)
+- [b-r-o-w-s-e](https://github.com/BlakeWilliams/b-r-o-w-s-e) project and [related article](https://blakewilliams.me/posts/handling-macos-url-schemes-with-go): great example of handling URLs with Golang on macOS
+- [Finicky](https://github.com/johnste/finicky) project: inspiration for Autobrowser, good example of handling more complex URL events
