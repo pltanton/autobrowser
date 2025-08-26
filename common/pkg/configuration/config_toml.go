@@ -1,7 +1,9 @@
 package configuration
 
 import (
+	"encoding/csv"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -83,7 +85,7 @@ func parseConfig(config *Config) error {
 		var stringCommand string
 		err = config.md.PrimitiveDecode(command.CMDPrimitive, &stringCommand)
 		if err == nil {
-			command.CMD = strings.Fields(stringCommand)
+			command.CMD = splitQuoted(stringCommand)
 			config.Commands[name] = command
 			continue
 		}
@@ -109,9 +111,21 @@ func parseConfig(config *Config) error {
 	return nil
 }
 
-func NewDefaultCommand(cmd string) Command {
+func splitQuoted(s string) []string {
+	r := csv.NewReader(strings.NewReader(s))
+	r.Comma = ' ' // split on spaces
+	r.LazyQuotes = true
+	cmd, err := r.Read()
+	if err != nil {
+		slog.Error("Unexpected error, somewhy failed to split quoted", "string", s, "error", err)
+		cmd = []string{s}
+	}
+	return cmd
+}
+
+func NewDefaultCommand(cmdString string) Command {
 	return Command{
-		CMD:         strings.Fields(cmd),
+		CMD:         splitQuoted(cmdString),
 		Placeholder: "{}",
 		QueryEscape: false,
 	}
