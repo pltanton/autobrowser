@@ -8,7 +8,6 @@ import (
 
 	"github.com/pltanton/autobrowser/common/pkg/app"
 	"github.com/pltanton/autobrowser/common/pkg/matchers"
-	"github.com/pltanton/autobrowser/common/pkg/matchers/fallback"
 	"github.com/pltanton/autobrowser/common/pkg/matchers/urlmatcher"
 	"github.com/pltanton/autobrowser/macos/internal/macevents"
 	"github.com/pltanton/autobrowser/macos/internal/matchers/appmatcher"
@@ -49,7 +48,6 @@ func main() {
 
 	registry.RegisterMatcher("url", urlmatcher.New(urlEvent.URL))
 	registry.RegisterMatcher("app", appmatcher.New(urlEvent.PID))
-	registry.RegisterMatcher("fallback", fallback.New())
 
 	app.SetupAndRun(cfg, urlEvent.URL, registry)
 }

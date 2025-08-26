@@ -51,7 +51,7 @@ Other examples can be found in the `examples` folder.
 
 The configuration consists of three main sections:
 
-1. **Commands** - Define reusable browser commands with the `command.<name>` structure
+1. **Commands** - Define reusable browser commands with the `command.<n>` structure
 2. **Rules** - Define conditions for browser selection using `[[rules]]` arrays
 3. **Default Command** - Define the default browser when no rules match with `default_command`
 
@@ -61,9 +61,9 @@ Save your configuration as `~/.config/autobrowser/config.toml` or pass a custom 
 
 Matchers define the conditions for rules to be applied.
 
-### fallback
+### Default command
 
-The fallback matcher always succeeds. Instead of using a matcher, you can simply set the `default_command` property:
+Instead of creating a matcher for default behavior, you can simply set the `default_command` property:
 
 ```toml
 default_command = "firefox"
@@ -156,7 +156,7 @@ This setup works both for Linux and macOS (Darwin) environments.
 
 The flake provides an overlay (`overlays.default`) and a module for home-manager (`homeModules.default`).
 
-The home-manager module provides strictly typed matcher configurations for improved type safety and validation. Each matcher type (`url`, `app`, `fallback`) has its own specific set of properties that are properly validated.
+The home-manager module provides strictly typed matcher configurations for improved type safety and validation. Each matcher type (`url`, `app`) has its own specific set of properties that are properly validated.
 
 Note: Nix configuration uses camelCase for properties (e.g., `bundleId`), while the generated TOML uses snake_case (e.g., `bundle_id`).
 
@@ -237,13 +237,6 @@ Example of home-manager module configuration:
             # bundlePath = "/Applications/Safari.app";  # Optional
             # executablePath = "/Applications/Safari.app/Contents/MacOS/Safari";  # Optional
           }
-        ];
-      },
-      # Simple fallback example
-      {
-        command = "personal";
-        matchers = [
-          { type = "fallback"; } # Always matches
         ];
       }
     ];

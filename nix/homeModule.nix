@@ -78,7 +78,7 @@ in {
             type = with lib.types; listOf (submodule {
               options = {
                 type = mkOption {
-                  type = enum [ "url" "app" "fallback" ];
+                  type = enum [ "url" "app" ];
                   description = "Matcher type";
                   example = "url";
                 };
@@ -222,21 +222,7 @@ in {
             );
             message = "App matcher should only use app-specific fields";
           }
-          {
-            # For fallback matchers, no extra fields should be set
-            assertion = matcher.type == "fallback" -> (
-              matcher.regex == null &&
-              matcher.host == null &&
-              matcher.scheme == null &&
-              matcher.class == null &&
-              matcher.title == null &&
-              matcher.displayName == null &&
-              matcher.bundleId == null &&
-              matcher.bundlePath == null &&
-              matcher.executablePath == null
-            );
-            message = "Fallback matcher should not define any additional fields";
-          }
+
         ]) rule.matchers
       ) (cfg.rules or []));
     }
