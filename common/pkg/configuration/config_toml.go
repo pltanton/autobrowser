@@ -1,9 +1,7 @@
 package configuration
 
 import (
-	"encoding/csv"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -112,15 +110,39 @@ func parseConfig(config *Config) error {
 }
 
 func splitQuoted(s string) []string {
-	r := csv.NewReader(strings.NewReader(s))
-	r.Comma = ' ' // split on spaces
-	r.LazyQuotes = true
-	cmd, err := r.Read()
-	if err != nil {
-		slog.Error("Unexpected error, somewhy failed to split quoted", "string", s, "error", err)
-		cmd = []string{s}
+	var result []string
+	var buf strings.Builder
+	var quote rune
+
+	flush := func() {
+		if buf.Len() > 0 {
+			result = append(result, buf.String())
+			buf.Reset()
+		}
 	}
-	return cmd
+
+	for _, r := range s {
+		switch {
+		case (r == '"' || r == '\''):
+			if quote == r {
+				quote = 0
+			} else if quote == 0 {
+				quote = r
+			} else {
+				buf.WriteRune(r)
+			}
+		case r == ' ' || r == '\t':
+			if quote != 0 {
+				buf.WriteRune(r)
+			} else {
+				flush()
+			}
+		default:
+			buf.WriteRune(r)
+		}
+	}
+	flush()
+	return result
 }
 
 func NewDefaultCommand(cmdString string) Command {
