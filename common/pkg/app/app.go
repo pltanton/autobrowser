@@ -31,6 +31,7 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 	var matched bool
 
 	for ruleN, rule := range c.Rules {
+		allMatched := true
 		for matcherN, matcherConfig := range rule.Matchers {
 			logWithMatcher := slog.With("type", matcherConfig.Type, "rule id", ruleN, "matcher id", matcherN)
 			logWithMatcher.Debug("Start matching")
@@ -47,18 +48,24 @@ func evaluate(c *configuration.Config, r *matchers.MatchersRegistry, urlString s
 
 			logWithMatcher.Debug("Matcher match result", "matched", ok)
 			if !ok {
-				continue
+				allMatched = false
+				break
 			}
-			matched = true
-
-			command, ok = c.Commands[rule.Command]
-			if !ok {
-				logWithMatcher.Debug("Command not declared, using command as is", "command", rule.Command)
-				command = configuration.NewDefaultCommand(rule.Command)
-			}
-
-			break
 		}
+
+		if !allMatched {
+			continue
+		}
+
+		matched = true
+		var ok bool
+		command, ok = c.Commands[rule.Command]
+		if !ok {
+			slog.Debug("Command not declared, using command as is", "command", rule.Command)
+			command = configuration.NewDefaultCommand(rule.Command)
+		}
+
+		break
 	}
 
 	if !matched {
