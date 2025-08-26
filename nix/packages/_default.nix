@@ -10,7 +10,7 @@ buildGoModule {
   vendorHash =
     if stdenv.isDarwin
     then "sha256-9asbxZJxovodDZFUNhlaF/B9fG78nDNcfhcKynFIXg8="
-    else "sha256-0000000000000000000000000000000000000000000=";
+    else "sha256-05D0rsPh/QLCL5i5c/xNTBozdRkPmtRQa5KU/Y0Y4pA=";
 
   src = import ../src.nix {inherit lib;};
   modRoot =
