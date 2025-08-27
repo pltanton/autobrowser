@@ -1,14 +1,40 @@
-name: Build and release
+name: Version and Release
 
 on:
-  workflow_run:
-    workflows: ["Test"]
-    branches: [master]
-    types:
-      - completed
+  push:
+    branches:
+      - master
 
 jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Git Version
+        id: version
+        uses: codacy/git-version@2.7.1
+
+      - name: Update Nix package version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/version = \".*\"/version = \"$VERSION\"/" nix/packages/_default.nix
+
+      - name: Commit version update
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add nix/packages/_default.nix
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git push
+
   build-linux:
+    needs: [update-version, test-linux]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,9 +42,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Git Version
-        id: version
-        uses: codacy/git-version@2.7.1
+        with:
+          ref: master # Get the latest commit with version update
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -35,7 +60,7 @@ jobs:
       - name: Build artifacts
         run: |
           export GOARCH=${{ matrix.arch }}
-          export VERSION=${{ steps.version.outputs.version }}
+          export VERSION=${{ needs.update-version.outputs.version }}
 
           nfpm package -p rpm --target out/ -f linux/build/nfpm.yaml
           nfpm package -p deb --target out/ -f linux/build/nfpm.yaml
@@ -47,15 +72,18 @@ jobs:
         with:
           name: linux-artifacts-${{ matrix.arch }}
           path: |
-            out/*.deb 
-            out/*.rpm 
+            out/*.deb
+            out/*.rpm
             out/*.apk
             out/*.zst
 
   build-mac:
+    needs: [update-version, test-macos]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master # Get the latest commit with version update
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -90,18 +118,14 @@ jobs:
             out/Autobrowser-Installer.dmg
 
   release:
-    needs: [build-linux, build-mac]
+    needs: [update-version, build-linux, build-mac]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }} # checkout the correct branch name
+          ref: master # Get the latest commit with version update
           fetch-depth: 0
-
-      - name: Git Version
-        id: version
-        uses: codacy/git-version@2.7.1
 
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
@@ -109,8 +133,10 @@ jobs:
           path: out
           merge-multiple: true
 
-      - name: Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "${{ steps.version.outputs.version }}"
+          tag_name: "${{ needs.update-version.outputs.version }}"
+          name: "Release ${{ needs.update-version.outputs.version }}"
           files: out/*
+          generate_release_notes: true
