@@ -6,7 +6,7 @@
 }:
 buildGoModule {
   pname = "autobrowser";
-  version = "0";
+  version = "1.0.2";
   vendorHash =
     if stdenv.isDarwin
     then "sha256-9asbxZJxovodDZFUNhlaF/B9fG78nDNcfhcKynFIXg8="
