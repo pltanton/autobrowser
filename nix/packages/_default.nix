@@ -9,7 +9,7 @@ buildGoModule {
   version = "1.0.2";
   vendorHash =
     if stdenv.isDarwin
-    then "sha256-9asbxZJxovodDZFUNhlaF/B9fG78nDNcfhcKynFIXg8="
+    then "sha256-/8llw+85SbNKxlAfwZBJmHNYZunCZeXiMmoGzZ4eMYs="
     else "sha256-05D0rsPh/QLCL5i5c/xNTBozdRkPmtRQa5KU/Y0Y4pA=";
 
   src = import ../src.nix {inherit lib;};
