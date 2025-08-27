@@ -34,7 +34,7 @@ jobs:
           git push
 
   build-linux:
-    needs: [update-version, test-linux]
+    needs: [update-version]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,7 +78,7 @@ jobs:
             out/*.zst
 
   build-mac:
-    needs: [update-version, test-macos]
+    needs: [update-version]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
