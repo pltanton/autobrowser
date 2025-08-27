@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"os/user"
 	"time"
 
 	"github.com/pltanton/autobrowser/common/pkg/app"
@@ -17,8 +18,13 @@ import (
 func parseConfig() string {
 	var result string
 
-	dir, _ := os.UserHomeDir()
-	flag.StringVar(&result, "config", dir+"/.config/autobrowser/config.toml", "configuration file path")
+	curUser, err := user.Current()
+	if err != nil {
+		slog.Error("Failed to get current user", "err", err)
+		os.Exit(1)
+	}
+
+	flag.StringVar(&result, "config", curUser.HomeDir+"/.config/autobrowser/config.toml", "configuration file path")
 
 	flag.Parse()
 
