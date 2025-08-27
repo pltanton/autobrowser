@@ -2,7 +2,6 @@
   lib,
   buildGoModule,
   stdenv,
-  darwin,
 }:
 buildGoModule {
   pname = "autobrowser";

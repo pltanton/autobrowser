@@ -45,7 +45,46 @@ class = "org.telegram.desktop"
 
 More examples in the `examples` folder.
 
+### Commands
+
+Commands define how to open URLs with specific browsers.
+
+#### Quotes in Commands
+
+```toml
+# For string command format
+[command.chrome]
+cmd = "open -a 'Google Chrome' {}"  # Single quotes inside double quotes
+
+# For array format (recommended for complex commands)
+[command.firefox]
+cmd = ["open", "-a", "Google Chrome", "{}"]  # No need to escape quotes in array format
+```
+
+**Note:** When using the string format for `cmd`, both single quotes (`'`) and double quotes (`"`) will be automatically escaped. For commands with complex quoting requirements, the array format is recommended.
+
+#### Command Options
+
+- `query_escape`: When set to `true`, escapes special characters in the URL before inserting into the command.
+- `placeholder`: Customize the placeholder for the URL (default is `{}`).
+
 ### Matchers
+
+#### Short Matcher Syntax
+
+For better readability, you can use a more concise syntax for matchers:
+
+```toml
+[[rules]]
+command = "work"
+# Concise syntax using inline table arrays
+matchers = [
+  {type = "app", class = "Slack"},
+  {type = "url", regex = ".*jira.*"}
+]
+```
+
+This is equivalent to the more verbose syntax shown in the first example.
 
 #### app
 
